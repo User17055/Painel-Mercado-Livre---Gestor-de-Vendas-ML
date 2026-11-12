@@ -1,0 +1,6 @@
+# So para a TELA do painel (venv com Python 3.12). O nucleo usa a biblioteca padrao + openpyxl.
+# Versoes fixas: atualizar de proposito, nunca sozinho.
+streamlit==1.39.0
+pandas==2.2.3
+plotly==5.24.1
+openpyxl==3.1.5

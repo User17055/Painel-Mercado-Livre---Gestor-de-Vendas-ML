@@ -1,0 +1,5 @@
+# Fim de linha padronizado: LF no repositorio; .ps1 com CRLF (PowerShell 5.1 no Windows).
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.png binary
+*.xlsx binary

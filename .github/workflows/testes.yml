@@ -1,0 +1,23 @@
+# Roda os testes do painel a cada push e pull request (Python 3.12, a mesma versao da imagem Docker).
+# Sem dados da empresa no repositorio: os testes que leem parametros reais sao pulados com aviso.
+name: testes
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Dependencias dos testes
+        run: pip install openpyxl==3.1.5
+      - name: Testes
+        run: python -I -m unittest discover -v -s painel/sistema/testes -t painel/sistema

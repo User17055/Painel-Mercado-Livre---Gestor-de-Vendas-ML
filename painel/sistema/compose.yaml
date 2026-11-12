@@ -1,0 +1,30 @@
+# Painel em Docker. Rodar nesta pasta (painel/sistema):
+#   1) copiar .env.exemplo para .env e ajustar (o .env NUNCA vai para repositorio, e-mail ou chat: pode ter segredo)
+#   2) docker compose up -d --build        3) abrir http://localhost:8501        parar: docker compose down
+# Pastas de fora (volumes) vem do .env; sem elas, usa as pastas deste projeto (caminhos relativos, valem em qualquer PC).
+name: painel-ml
+
+services:
+  painel:
+    build:
+      context: ../..
+      dockerfile: painel/sistema/Dockerfile
+    image: painel-ml:esqueleto
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PAINEL_PERMITE_ATUALIZAR: ${PAINEL_PERMITE_ATUALIZAR:-0}
+    ports:
+      # 127.0.0.1 = so este PC. Para a rede da empresa: PAINEL_EXPOR=0.0.0.0 no .env (decisao do responsavel; ver docs).
+      - "${PAINEL_EXPOR:-127.0.0.1}:${PAINEL_PORTA:-8501}:8501"
+    volumes:
+      - ${ML_DADOS_HOST:-../../relatorios-ml/api}:/dados
+      - ${ML_CONFIG_HOST:-../../analise}/ml_parametros.json:/config/ml_parametros.json:ro
+      - ${ML_CONFIG_HOST:-../../analise}/custos_produtos.csv:/config/custos_produtos.csv:ro
+      # tokens do ML: so na UNICA maquina que atualiza (refresh token de uso unico). Sem ML_API_HOST = volume vazio = so leitura.
+      - ${ML_API_HOST:-segredos}:/segredos
+    restart: unless-stopped
+
+volumes:
+  segredos:

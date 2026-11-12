@@ -24,8 +24,7 @@ def _dir(variavel: str, padrao: Path) -> Path:
     return Path(v).expanduser().resolve() if v else padrao
 
 
-SISTEMA = Path(__file__).resolve().parents[2]        # painel/sistema
-PROJETO = SISTEMA.parents[1]                         # raiz do projeto (no Docker nao existe: tudo vem das variaveis)
+PROJETO = Path(__file__).resolve().parents[2]        # raiz do projeto (no Docker nao existe: tudo vem das variaveis)
 
 ANALISE = _dir("ML_ANALISE_DIR", PROJETO / "analise")
 DADOS = _dir("ML_DADOS_DIR", PROJETO / "relatorios-ml" / "api")

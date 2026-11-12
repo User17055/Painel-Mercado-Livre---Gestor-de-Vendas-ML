@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Entrada do painel (Streamlit). Rodar: Docker (painel/sistema/compose.yaml) ou, sem Docker, painel/sistema/rodar.ps1.
+"""Entrada do painel (Streamlit). Rodar: Docker (compose.yaml na raiz) ou, sem Docker, rodar.ps1.
 
 So monta a navegacao e a configuracao da pagina. Nenhuma conta aqui: as paginas chamam o nucleo (painel/nucleo).
 Configuracao (pastas, so leitura x atualizar): variaveis de ambiente, ver painel/nucleo/caminhos.py.
@@ -7,7 +7,7 @@ Configuracao (pastas, so leitura x atualizar): variaveis de ambiente, ver painel
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # painel/sistema, para "import painel.nucleo"
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # raiz do projeto, para "import painel.nucleo"
 
 import streamlit as st  # noqa: E402
 

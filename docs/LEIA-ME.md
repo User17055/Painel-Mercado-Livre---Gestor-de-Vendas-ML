@@ -1,34 +1,34 @@
 # Painel de vendas e lucro do ML (TPP + PD): LEIA-ME
 Estado em 12/11/2026: **esqueleto**, no repositório da equipe; roda em qualquer PC.
 Requisitos e fases: `PLANO-PAINEL-ML.md`. Camadas, classes, fórmulas e modos de uso: `ARQUITETURA.md` (os dois nesta pasta).
-Código: `painel\sistema\` (esta pasta `docs` não tem código; a pasta do código não tem documentação). Visão geral: `README.md`
+Código: `painel\`, `analise\` e `testes\` (esta pasta `docs` não tem código; as pastas de código não têm documentação). Visão geral: `README.md`
 na raiz do repositório.
 
 ## O que está no repositório (e o que não está)
-- **Está:** a pasta `painel\` (`docs` e `sistema`) e, em `analise\`, `ml_param.py`, `ml_margem.py` e `ml_pedidos.py` (os
+- **Está:** `painel\`, `testes\`, `docs\`, os arquivos de Docker e de instalação na raiz e, em `analise\`, `ml_param.py`, `ml_margem.py` e `ml_pedidos.py` (os
   módulos que o painel importa; `testes\test_pacote.py` confere que a lista do Docker é exatamente essa).
 - **Fica fora do git (`.gitignore`), cada PC põe o seu:** `analise\ml_parametros.json` e `analise\custos_produtos.csv`
-  (custo e imposto da empresa; quem tem, copia para `analise\` ou aponta `ML_CONFIG_DIR`), a pasta de dados
+  (custo e imposto da empresa; recebidos pelo canal interno, ver `README.md`), a pasta de dados
   (`relatorios-ml\api`, ou `ML_DADOS_DIR`), o `.env` e a pasta de tokens.
 
 ## Como rodar
 **Uso combinado (11/11): um servidor só; todos acessam pelo navegador.** Quem só consulta não instala nada: abre o endereço do
 servidor. Os passos abaixo são para **montar o servidor** (ou testar no próprio PC).
 
-**Com Docker (qualquer PC):** na pasta `painel\sistema`
+**Com Docker (qualquer PC):** na raiz do repositório
 1. copiar `.env.exemplo` para `.env` e ajustar (padrão: só leitura, só este PC, pastas do próprio projeto);
 2. `docker compose up -d --build`;
 3. abrir `http://localhost:8501`. Parar: `docker compose down`.
 
-**Sem Docker (desenvolvimento):** `painel\sistema\instalar.ps1` (uma vez; precisa do Python 3.12) e `painel\sistema\rodar.ps1`.
+**Sem Docker (desenvolvimento):** `instalar.ps1` (uma vez; precisa do Python 3.12) e `rodar.ps1`, os dois na raiz.
 
-Configuração: só variáveis de ambiente (tabela em `painel\sistema\painel\nucleo\caminhos.py`). Nada aponta para um PC específico.
+Configuração: só variáveis de ambiente (tabela em `painel\nucleo\caminhos.py`). Nada aponta para um PC específico.
 
 ## Estado de cada peça
-| Peça | Arquivo (em `painel\sistema\` salvo indicação) | Estado |
+| Peça | Arquivo (caminho a partir da raiz) | Estado |
 |---|---|---|
 | Configuração portátil (pastas e modo por variável de ambiente) | `painel\nucleo\caminhos.py`, `analise\ml_param.py` (`DIR_DADOS`, `DIR_CONFIG`) | pronto e testado; relatórios das análises idênticos antes × depois (17 de 17) |
-| Docker (imagem só com código; dados/parâmetros/tokens como volume) | `Dockerfile`, `Dockerfile.dockerignore`, `compose.yaml`, `.env.exemplo` | escrito; `docker compose config` válido; **imagem não construída** (Docker Desktop desligado e o build baixa a imagem base) |
+| Docker (imagem só com código; dados/parâmetros/tokens como volume) | `Dockerfile`, `.dockerignore`, `compose.yaml`, `.env.exemplo` | escrito; `docker compose config` válido; **imagem não construída** (Docker Desktop desligado e o build baixa a imagem base) |
 | Parâmetros `pedidos` e `painel` | `analise\ml_param.py` + `analise\ml_parametros.json` | pronto |
 | Lista fechada, filtro do pedido, esquema e criação do banco | `analise\ml_pedidos.py` | pronto e testado (sem comprador) |
 | Leitura dos pedidos pela API (busca, frete, cobrança, gravação) | `analise\ml_pedidos.py` | fase 1a (`NotImplementedError`) |
@@ -44,12 +44,12 @@ Configuração: só variáveis de ambiente (tabela em `painel\sistema\painel\nuc
 
 ## Como conferir
 - Testes, na raiz do repositório (Python 3.12 ou mais novo com `openpyxl`, por exemplo o `.venv` do `instalar.ps1`):
-  `python -m unittest discover -s painel\sistema\testes -t painel\sistema` (12/11: 21 testes; sem os parâmetros da empresa,
+  `python -m unittest discover -s testes -t .` (12/11: 21 testes; sem os parâmetros da empresa,
   2 pulados com aviso). O GitHub roda os mesmos testes a cada push (`.github\workflows\testes.yml`).
 - Regras de privacidade e portabilidade (nenhum campo de comprador e nenhum `C:\Users\...` no código, `.ps1` só ASCII): hoje
   checadas por uma ferramenta que **não está neste repositório**; trazer para um teste em `testes\` é o
   primeiro passo da fase 1a.
-- Compose válido sem rodar nada: `docker compose config` na pasta `painel\sistema`.
+- Compose válido sem rodar nada: `docker compose config` na raiz do repositório.
 - Criar o banco vazio (não chama a API): `python analise\ml_pedidos.py criar-banco`.
 
 ## Próximos passos (ordem)

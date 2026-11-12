@@ -14,7 +14,7 @@ AQUI = Path(__file__).resolve().parent
 
 
 def _dir(variavel, padrao):
-    """Pasta pela variavel de ambiente (qualquer PC / Docker) ou o padrao relativo ao projeto. Ver painel\\sistema\\painel\\nucleo\\caminhos.py."""
+    """Pasta pela variavel de ambiente (qualquer PC / Docker) ou o padrao relativo ao projeto. Ver painel\\nucleo\\caminhos.py."""
     v = os.environ.get(variavel, "").strip()
     return Path(v).expanduser().resolve() if v else padrao
 
@@ -46,7 +46,7 @@ PADRAO = {
     "abc": {"meses": 12, "limite_a_pct": 80, "limite_b_pct": 95, "meses_recentes": 3, "topo_anuncios": 15},
     "conta_produto": {"diferenca_relevante_un": 2.0, "meses_reais": 3},
     "prova": {"dias_janela": 14, "min_dias_depois": 7, "variacao_preco_min_pct": 3.0, "dias_confirmam": 2, "min_un_antes": 10, "min_un_controle": 10, "min_eventos_resumo": 3},
-    # pedidos pela API (ml_pedidos.py) e painel (codigo em painel\sistema): ver painel\docs\ARQUITETURA.md
+    # pedidos pela API (ml_pedidos.py) e painel (codigo em painel\): ver docs\ARQUITETURA.md
     "pedidos": {"inicio": "2026-01-01", "lote_cobranca": 60, "por_pagina": 50},
     "painel": {"intervalo_atualizacao_min": 15},
 }

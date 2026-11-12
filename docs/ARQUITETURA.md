@@ -3,7 +3,7 @@ Esqueleto de 11/11/2026 (reorganizado no mesmo dia: documentação fora da pasta
 Requisitos e fases: `PLANO-PAINEL-ML.md`. Estado de cada peça e como rodar: `LEIA-ME.md` (os três nesta pasta `painel\docs`).
 
 ## 1. Camadas (cada uma só conhece a de baixo)
-Caminhos relativos à raiz do projeto; código do painel em `painel\sistema\painel\` (abaixo, só `painel\...`).
+Caminhos relativos à raiz do projeto; código do painel em `painel\`.
 ```
  [4] TELA (Streamlit)        painel\app.py, painel\paginas\*.py        Python 3.12 (Docker ou venv) + streamlit, pandas, plotly
         |  só chama o núcleo; nenhuma conta de negócio na tela
@@ -127,22 +127,20 @@ Raiz do repositório (`Painel-Mercado-Livre---Gestor-de-Vendas-ML`):
 README.md  CLAUDE.md                visão geral e regras (CLAUDE.md = instruções para o Claude Code)
 .gitignore  .gitattributes  .editorconfig   segredos e dados da empresa fora do git; fim de linha e codificação
 .github\workflows\testes.yml        testes a cada push (Python 3.12)
-painel\                             projeto do painel
-  docs\                             só documentação: ARQUITETURA.md  LEIA-ME.md  PLANO-PAINEL-ML.md
-  sistema\                          só o que roda (vai para a imagem Docker)
-    Dockerfile  Dockerfile.dockerignore  compose.yaml  .env.exemplo  requirements.txt  instalar.ps1  rodar.ps1
-    painel\                         pacote Python
-      app.py                        entrada (navegação entre as páginas)
-      paginas\                      visao_geral.py  vendas_e_lucro.py  downloads.py
-      nucleo\                       caminhos.py  modelos.py  repositorio.py  calculo.py  resumo.py  exportar.py  atualizar.py  conferencia.py
-    testes\                         test_modelos.py  test_privacidade.py  test_atualizar.py  test_configuracao.py  test_pacote.py
+Dockerfile  .dockerignore  compose.yaml  .env.exemplo  requirements.txt  instalar.ps1  rodar.ps1   rodar o painel (com e sem Docker)
+docs\                               só documentação: ARQUITETURA.md  LEIA-ME.md  PLANO-PAINEL-ML.md
+painel\                             pacote Python do painel (vai para a imagem Docker)
+  app.py                            entrada (navegação entre as páginas)
+  paginas\                          visao_geral.py  vendas_e_lucro.py  downloads.py
+  nucleo\                           caminhos.py  modelos.py  repositorio.py  calculo.py  resumo.py  exportar.py  atualizar.py  conferencia.py
+testes\                             test_modelos.py  test_privacidade.py  test_atualizar.py  test_configuracao.py  test_pacote.py
 analise\ml_pedidos.py               coletor de pedidos (camada 1)
 analise\ml_param.py, ml_margem.py   parâmetros e regra de custo
+analise\ml_parametros.json, custos_produtos.csv   dados da empresa: fora do git, recebidos pelo canal interno
 ```
-Da pasta `analise\` só entram no pacote da equipe (imagem Docker) os módulos que o painel importa: hoje `ml_param`, `ml_margem`
-e `ml_pedidos` (lista no `Dockerfile` e no `Dockerfile.dockerignore`). Na fase 1a, quando `ml_pedidos` passar a usar `ml_api_coletor` e `ml_auth`, o `test_pacote.py` falha até
+Da pasta `analise\` só entram na imagem Docker os módulos que o painel importa: hoje `ml_param`, `ml_margem`
+e `ml_pedidos` (lista no `Dockerfile` e no `.dockerignore`). Na fase 1a, quando `ml_pedidos` passar a usar `ml_api_coletor` e `ml_auth`, o `test_pacote.py` falha até
 os dois entrarem nas duas listas.
 ```
-<DADOS>\vendas_api.db               criado pelo coletor (fora de qualquer repositório e da imagem)
 <DADOS>\vendas_api.db               criado pelo coletor (fora de qualquer repositório e da imagem)
 ```

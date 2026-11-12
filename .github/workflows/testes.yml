@@ -20,4 +20,4 @@ jobs:
       - name: Dependencias dos testes
         run: pip install openpyxl==3.1.5
       - name: Testes
-        run: python -I -m unittest discover -v -s painel/sistema/testes -t painel/sistema
+        run: python -I -m unittest discover -v -s testes -t .

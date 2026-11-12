@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SISTEMA = Path(__file__).resolve().parents[1]
+PROJETO = Path(__file__).resolve().parents[1]
 SONDA = (
     "import sys, json; sys.path.insert(0, sys.argv[1]);"
     "from painel.nucleo import caminhos; import ml_param, ml_margem, ml_pedidos;"
@@ -20,14 +20,14 @@ SONDA = (
 def sondar(extra_env: dict) -> dict:
     env = {k: v for k, v in os.environ.items() if not k.startswith(("ML_", "PAINEL_"))}
     env.update(extra_env)
-    r = subprocess.run([sys.executable, "-I", "-c", SONDA, str(SISTEMA)], env=env, capture_output=True, text=True, check=True)
+    r = subprocess.run([sys.executable, "-I", "-c", SONDA, str(PROJETO)], env=env, capture_output=True, text=True, check=True)
     return json.loads(r.stdout)
 
 
 class TestConfiguracao(unittest.TestCase):
     def test_padrao_e_o_projeto(self):
         d = sondar({})
-        projeto = SISTEMA.parents[1]
+        projeto = PROJETO
         self.assertEqual(Path(d["dados"]), projeto / "relatorios-ml" / "api")
         self.assertEqual(Path(d["base"]), Path(d["dados"]))                 # analises e painel olham a mesma pasta
         self.assertEqual(Path(d["param"]), projeto / "analise" / "ml_parametros.json")

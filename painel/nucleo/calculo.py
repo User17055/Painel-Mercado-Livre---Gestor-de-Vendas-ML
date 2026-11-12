@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""CalculadoraLucro: Pedido -> lista de ResultadoItem (uma linha por item). Formulas: painel/docs/ARQUITETURA.md, secao 3.
+"""CalculadoraLucro: Pedido -> lista de ResultadoItem (uma linha por item). Formulas: docs/ARQUITETURA.md, secao 3.
 
 Reaproveita ml_margem (produto pelo titulo, kit, brinde, custo da mercadoria) e ml_param (imposto por conta/produto) por meio de
 RepositorioParametros: a mesma regra dos relatorios .md.

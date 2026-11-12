@@ -5,7 +5,7 @@
 !analise/ml_param.py
 !analise/ml_margem.py
 !analise/ml_pedidos.py
-!painel/sistema/requirements.txt
-!painel/sistema/painel/
+!requirements.txt
+!painel/
 **/__pycache__
 **/.venv

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""ml_pedidos.py: vendas pela API (pedidos), SO LEITURA e SEM DADO DE COMPRADOR. Base do painel (painel\\docs\\ARQUITETURA.md).
+"""ml_pedidos.py: vendas pela API (pedidos), SO LEITURA e SEM DADO DE COMPRADOR. Base do painel (docs\\ARQUITETURA.md).
 
 Regra: so os campos necessarios ao lucro. Como garante: LISTA FECHADA. O coletor copia apenas as chaves de CAMPOS_*
   (abaixo); tudo o que nao esta na lista (comprador, apelido, destinatario, endereco, telefone, documento) e descartado
   na leitura: nao e gravado nem mostrado.
-  painel\\sistema\\painel\\nucleo\\conferencia.sem_comprador
+  painel\\nucleo\\conferencia.sem_comprador
   confere o banco.
 
 Fontes (documentacao do ML; ainda nao validado com dado real):
@@ -12,7 +12,7 @@ Fontes (documentacao do ML; ainda nao validado com dado real):
             so os ultimos 12 meses; a busca do vendedor esconde cancelados)
   frete     GET /shipments/<id>/costs  (cabecalho x-format-new: true)  -> senders[].cost = o que o vendedor pagou
   cobranca  GET /billing/integration/group/ML/order/details?order_ids=a,b,..  (ate 60 por chamada) -> tarifa, frete, descontos
-Liquido por item = preco x quantidade - tarifa - frete rateado (a conta fica em painel\\sistema\\painel\\nucleo\\calculo.py).
+Liquido por item = preco x quantidade - tarifa - frete rateado (a conta fica em painel\\nucleo\\calculo.py).
 
 Uso (pasta analise\\):
   python ml_pedidos.py criar-banco                     # cria relatorios-ml\\api\\vendas_api.db vazio (esquema abaixo)
@@ -63,7 +63,7 @@ TIPOS = {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "seq": "INTEGER", "quantidad
 
 
 def colunas_permitidas() -> dict[str, set[str]]:
-    """Tabela -> colunas que podem existir no banco (usada por painel\\sistema\\painel\\nucleo\\conferencia.sem_comprador)."""
+    """Tabela -> colunas que podem existir no banco (usada por painel\\nucleo\\conferencia.sem_comprador)."""
     return {t: set(c) for t, c in ESQUEMA.items()} | {"sqlite_sequence": {"name", "seq"}}   # tabela interna do AUTOINCREMENT
 
 

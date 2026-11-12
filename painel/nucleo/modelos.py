@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Modelos (entidades) do painel. So dados e regras simples deles; nenhuma leitura de arquivo nem chamada de API.
 
-Relacoes (painel/docs/ARQUITETURA.md, secao 2): Conta 1-* Pedido; Pedido 1-1..* ItemPedido; Pedido 1-0..1 Envio; Pedido 1-* Cobranca;
+Relacoes (docs/ARQUITETURA.md, secao 2): Conta 1-* Pedido; Pedido 1-1..* ItemPedido; Pedido 1-0..1 Envio; Pedido 1-* Cobranca;
 ItemPedido *-0..1 Produto (pelo titulo); Produto 1-0..1 CustoProduto; Conta 1-* RegraImposto (padrao + excecao por produto).
 Nenhum modelo tem campo de comprador: nao existe onde guardar.
 Dinheiro em float arredondado a 2 casas, como no resto do projeto.

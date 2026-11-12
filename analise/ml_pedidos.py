@@ -15,7 +15,7 @@ Fontes (documentacao do ML; ainda nao validado com dado real):
 Liquido por item = preco x quantidade - tarifa - frete rateado (a conta fica em painel\\nucleo\\calculo.py).
 
 Uso (pasta analise\\):
-  python ml_pedidos.py criar-banco                     # cria relatorios-ml\\api\\vendas_api.db vazio (esquema abaixo)
+  python ml_pedidos.py criar-banco                     # cria dados\\vendas_api.db vazio (esquema abaixo)
   python ml_pedidos.py <CONTA> --desde AAAA-MM-DD       # (fase 1a) le os pedidos e mostra o resumo, sem gravar
   python ml_pedidos.py <CONTA> --desde AAAA-MM-DD --gravar   # (fase 1a) grava no banco (incremental: so o que falta)
 Parametros: ml_parametros.json > pedidos (inicio, lote_cobranca, por_pagina).
@@ -27,9 +27,9 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # py -I nao inclui a pasta do script
-import ml_margem as M  # noqa: E402
+import ml_param  # noqa: E402
 
-BANCO = M.BASE / "vendas_api.db"
+BANCO = ml_param.DIR_DADOS / "vendas_api.db"
 
 # --- LISTA FECHADA: coluna do banco -> caminho no JSON do ML. So isto entra. ------------------------------------------------
 CAMPOS_PEDIDO = {

@@ -4,7 +4,7 @@
 Relacoes (docs/ARQUITETURA.md, secao 2): Conta 1-* Pedido; Pedido 1-1..* ItemPedido; Pedido 1-0..1 Envio; Pedido 1-* Cobranca;
 ItemPedido *-0..1 Produto (pelo titulo); Produto 1-0..1 CustoProduto; Conta 1-* RegraImposto (padrao + excecao por produto).
 Nenhum modelo tem campo de comprador: nao existe onde guardar.
-Dinheiro em float arredondado a 2 casas, como no resto do projeto.
+Dinheiro em float arredondado a 2 casas.
 """
 from dataclasses import dataclass, field
 from datetime import datetime

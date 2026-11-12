@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # raiz do proje
 
 import streamlit as st  # noqa: E402
 
-from painel.nucleo import caminhos  # noqa: E402,F401  (le a configuracao e poe a pasta das analises no sys.path)
+from painel.nucleo import caminhos  # noqa: E402,F401  (le a configuracao e poe a pasta analise/ no sys.path)
 
 st.set_page_config(page_title="Vendas ML · TPP e PD", layout="wide")
 

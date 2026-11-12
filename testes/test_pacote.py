@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Pacote da equipe: so os modulos de analise/ que o painel usa entram na imagem Docker.
+"""Imagem Docker: so os modulos de analise/ que o painel usa entram nela.
 
 A lista esta escrita no Dockerfile (COPY) e no .dockerignore. Este teste segue os imports a partir do pacote do
-painel e confere que as duas listas sao exatamente os modulos necessarios: se faltar um, a imagem quebra; se sobrar, vai
-para a equipe uma ferramenta que o painel nao usa.
+painel e confere que as duas listas sao exatamente os modulos necessarios: se faltar um, a imagem quebra; se sobrar, a
+imagem leva codigo que o painel nao usa.
 """
 import ast
 import re

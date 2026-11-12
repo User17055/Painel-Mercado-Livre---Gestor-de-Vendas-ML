@@ -44,7 +44,7 @@ class RepositorioPedidos:
 
 
 class RepositorioParametros:
-    """Custos, rebate e imposto: a MESMA fonte das analises (uma regra so)."""
+    """Custos, rebate e imposto, pelas regras de analise/ (ml_param e ml_margem): uma regra so."""
 
     def __init__(self, P: dict | None = None):
         self.P = P or ml_param.carregar()

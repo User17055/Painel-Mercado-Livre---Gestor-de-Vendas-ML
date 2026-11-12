@@ -2,7 +2,7 @@
 """Conferencias de que o controle de vendas bate com a fonte. Cada uma devolve (ok, texto) para mostrar na tela.
 
 sem_comprador      colunas do vendas_api.db so da lista fechada (nenhum dado de comprador no banco)
-api_x_excel        liquido por venda pela API = "Total (BRL)" do relatorio do ML (ml_margem.vendas) no periodo comum (fase 1a)
+api_x_excel        liquido por venda pela API = "Total (BRL)" do relatorio de vendas do ML (Excel) no periodo comum (fase 1a)
 unidades           unidades por contagem independente (soma dos itens x contagem no banco) (fase 1a)
 """
 import sqlite3
@@ -31,7 +31,7 @@ def sem_comprador(banco: Path = caminhos.BANCO_VENDAS) -> tuple[bool, str]:
 
 
 def api_x_excel(conta: str, de: date, ate: date, tolerancia: float = 0.01) -> tuple[bool, str]:
-    raise NotImplementedError("fase 1a: comparar venda a venda com ml_margem.vendas(conta) no periodo comum")
+    raise NotImplementedError("fase 1a: comparar venda a venda com o relatorio de vendas do ML (Excel) no periodo comum")
 
 
 def unidades(conta: str, de: date, ate: date) -> tuple[bool, str]:

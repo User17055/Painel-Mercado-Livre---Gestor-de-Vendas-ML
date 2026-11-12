@@ -1,6 +1,6 @@
 # Arquitetura do painel de vendas (TPP + PD)
-Esqueleto de 11/11/2026 (reorganizado no mesmo dia: documentação fora da pasta do código; roda em qualquer PC e no Docker).
-Requisitos e fases: `PLANO-PAINEL-ML.md`. Estado de cada peça e como rodar: `LEIA-ME.md` (os três nesta pasta `painel\docs`).
+Esqueleto: roda em qualquer PC e no Docker.
+Requisitos e fases: `PLANO-PAINEL-ML.md`. Estado de cada peça e como rodar: `LEIA-ME.md` (os três nesta pasta `docs`).
 
 ## 1. Camadas (cada uma só conhece a de baixo)
 Caminhos relativos à raiz do projeto; código do painel em `painel\`.
@@ -11,22 +11,21 @@ Caminhos relativos à raiz do projeto; código do painel em `painel\`.
         |  calcula lucro, resume, exporta, confere, controla a atualização; configuração em painel\nucleo\caminhos.py
  [2] DADOS (repositórios)    painel\nucleo\repositorio.py              lê SQLite, CSV e JSON; não escreve
         |
- [1] COLETA (API, só GET)    analise\ml_pedidos.py (novo)              mesma regra do projeto: só Coleta.get
-                             analise\ml_api_coletor.py                 (fase 1a)
+ [1] COLETA (API, só GET)    analise\ml_pedidos.py                     leitura só por GET, por uma função única (fase 1a)
         |
      pastas (cada uma por variável de ambiente; padrão = a do projeto):
-       DADOS   (ML_DADOS_DIR)   coletas, monitor, vendas_api.db (pedidos, sem comprador)
+       DADOS   (ML_DADOS_DIR)   vendas_api.db (pedidos, sem comprador), trava e registro da atualização
        CONFIG  (ML_CONFIG_DIR)  ml_parametros.json, custos_produtos.csv
        TOKENS  (ML_API_DIR)     só na máquina que atualiza
 ```
 **Por que assim**
 - A regra de lucro fica num lugar só (núcleo), e ele **reaproveita** `ml_margem` (produto pelo título, kit, custo, rebate) e
-  `ml_param` (imposto por conta e produto). O painel e os relatórios .md nunca divergem.
+  `ml_param` (imposto por conta e produto).
 - O núcleo não depende do Streamlit: os testes rodam só com Python e openpyxl (`python -m unittest`), e a tela pode
   mudar (Streamlit, outra ferramenta) sem mexer na conta.
-- A coleta é a única camada que fala com o ML, e só por `Coleta.get` (GET). O painel nunca chama a API direto: o botão
+- A coleta é a única camada que fala com o ML, e só por GET, numa função única. O painel nunca chama a API direto: o botão
   "Atualizar" chama a coleta por meio do `Atualizador` (trava + intervalo).
-- `vendas_api.db` é um banco **separado** de qualquer outro banco das análises: pedidos não somem numa reimportação.
+- `vendas_api.db` é um banco próprio, só com a lista fechada de campos.
 
 ## 2. Classes e relações (núcleo)
 ```mermaid
@@ -62,10 +61,10 @@ Serviços (sem estado de negócio):
 | `resumo` | `ResultadoItem` → `ResumoPeriodo` por mês, acumulado, por produto | modelos |
 | `exportar` | qualquer lista de linhas → CSV (`;`, utf-8-sig) e Excel com abas (Arial, autor) | `openpyxl` |
 | `Atualizador` | uma atualização por vez (trava em arquivo) e intervalo mínimo; registra a execução | sistema de arquivos |
-| `conferencia` | provas de que é "fiel": API × Excel do ML, unidades, sem comprador | repositórios, `ml_margem.vendas` |
+| `conferencia` | provas de que é "fiel": API × relatório de vendas do ML (Excel), unidades, sem comprador | repositórios |
 
 ## 3. Fórmulas (uma regra só)
-Por item de pedido (valores em R$, `float` arredondado a 2 casas, como no resto do projeto):
+Por item de pedido (valores em R$, `float` arredondado a 2 casas):
 - bruto = `preco_unit` × quantidade (`unit_price` já vem com desconto do vendedor);
 - tarifa = `sale_fee` × quantidade; frete = custo do vendedor no envio, **rateado pelo bruto** entre os itens do pedido/pacote;
 - **líquido** = bruto − tarifa − frete (a doc do ML: `unit_price × quantity − marketplace_fee − seller.cost`), conferido com a cobrança;
@@ -93,13 +92,13 @@ aparecem no código do coletor nem do painel, e `conferencia.sem_comprador` conf
 ## 5. Decisões (registro)
 | # | Decisão | Por quê | Alternativa descartada |
 |---|---|---|---|
-| D1 | Vendas pela API, lista fechada de campos | mais fácil de atualizar; decidido em 11/11 | Excel manual (continua só para antes de 12 meses) |
+| D1 | Vendas pela API, lista fechada de campos | mais fácil de atualizar; decidido em 11/11 | Excel manual |
 | D2 | Streamlit + núcleo em Python puro | mesmo código e mesma regra do projeto | Power BI/Looker (não leem a API do ML direto) |
-| D3 | Python 3.12 em venv só para a tela | Streamlit/pandas sem pacote pronto para 3.14 aqui; o código do projeto compila em 3.12 (conferido 11/11) | atualizar tudo para 3.12 |
-| D4 | Banco separado `vendas_api.db` | `historico.db` é recriado pela importação | tabela dentro do histórico |
+| D3 | Python 3.12 (Docker, venv e GitHub) | Streamlit e pandas com pacote pronto nessa versão; a mesma versão em todo lugar | versão mais nova sem pacote pronto |
+| D4 | Banco próprio `vendas_api.db` | só a lista fechada de campos, nada misturado | tabela dentro de outro banco |
 | D5 | Botão com trava em arquivo + intervalo (parâmetro `painel.intervalo_atualizacao_min`) | token do ML de uso único; não repetir chamadas | atualizar a cada acesso |
-| D6 | Imposto pelo bloco `imposto` já existente | mesma regra dos relatórios; TPP já preenchida | tabela própria do painel |
-| D7 | Nenhum caminho de um PC: tudo por variável de ambiente com padrão relativo ao projeto (`caminhos.py`, `ml_param.DIR_*`) | projeto de 4 pessoas, em PCs diferentes | caminho fixo |
+| D6 | Imposto pelo bloco `imposto` de `ml_parametros.json` | uma regra para as duas empresas, com exceção por produto; TPP já preenchida | tabela própria do painel |
+| D7 | Nenhum caminho de um PC: tudo por variável de ambiente com padrão relativo ao projeto (`caminhos.py`, `ml_param.DIR_*`) | equipe em PCs diferentes | caminho fixo |
 | D8 | Docker (imagem só com código; dados, parâmetros e tokens como volume) | igual em qualquer PC; nada da empresa dentro da imagem | instalar Python em cada PC (continua possível: `instalar.ps1`) |
 | D9 | **Uma** máquina atualiza (tem os tokens; `PAINEL_PERMITE_ATUALIZAR=1`) | o refresh token do ML é de uso único: duas máquinas renovando derrubam o acesso uma da outra | cada PC com seus tokens |
 | D10 | **Servidor único com acesso pela web** (decidido em 11/11) | todos veem o mesmo número na mesma hora; ninguém instala nada; token num lugar só | cada um rodar no próprio PC com pasta compartilhada |
@@ -114,12 +113,11 @@ do servidor; ninguém instala nada no próprio PC. Só o servidor roda o painel,
 | Desenvolvimento | quem desenvolve | sem Docker: `instalar.ps1` + `rodar.ps1` (pastas do projeto), só para testar mudanças | os próprios (não rodar ao mesmo tempo que o servidor atualiza) |
 | Só leitura local (não adotado) | — | possível pela portabilidade (`ML_DADOS_HOST` numa pasta compartilhada), mas não é o plano | nenhum |
 
-**Ainda a decidir:** qual máquina é o servidor; se o acesso é só pela rede da empresa ou também de fora, e com
-qual login (ex.: Cloudflare Tunnel + Access, grátis até 50 usuários). Fase 4.
+**Ainda a decidir:** qual máquina é o servidor (acesso pela rede da empresa).
 A portabilidade serve para o servidor ficar em qualquer máquina e trocar de máquina sem mudar código.
-**Risco aberto (não resolvido no esqueleto):** se um agendamento de coleta/monitor em outro PC e um servidor Docker
-usarem os mesmos tokens ao mesmo tempo, a renovação pode colidir. Antes de ligar o botão (fase 2): ou só o servidor coleta, ou
-`ml_auth` ganha uma trava entre processos na renovação.
+**Risco aberto (não resolvido no esqueleto):** se outra máquina ou programa usar os mesmos tokens do app ao mesmo tempo que
+o servidor, a renovação pode colidir. Antes de ligar o botão (fase 2): ou só o servidor renova o token, ou a renovação ganha
+uma trava entre processos.
 
 ## 7. Estrutura de pastas
 Raiz do repositório (`Painel-Mercado-Livre---Gestor-de-Vendas-ML`):
@@ -139,8 +137,8 @@ analise\ml_param.py, ml_margem.py   parâmetros e regra de custo
 analise\ml_parametros.json, custos_produtos.csv   dados da empresa: fora do git, recebidos pelo canal interno
 ```
 Da pasta `analise\` só entram na imagem Docker os módulos que o painel importa: hoje `ml_param`, `ml_margem`
-e `ml_pedidos` (lista no `Dockerfile` e no `.dockerignore`). Na fase 1a, quando `ml_pedidos` passar a usar `ml_api_coletor` e `ml_auth`, o `test_pacote.py` falha até
-os dois entrarem nas duas listas.
+e `ml_pedidos` (lista no `Dockerfile` e no `.dockerignore`). Na fase 1a, quando o coletor precisar de módulos novos (leitura da API e token), o
+`test_pacote.py` falha até eles entrarem nas duas listas.
 ```
 <DADOS>\vendas_api.db               criado pelo coletor (fora de qualquer repositório e da imagem)
 ```

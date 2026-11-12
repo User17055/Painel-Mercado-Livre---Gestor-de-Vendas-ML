@@ -57,9 +57,9 @@ TEM_PARAMETROS = all((caminhos.CONFIG / f).exists() for f in ("ml_parametros.jso
 
 @unittest.skipUnless(TEM_PARAMETROS, "sem ml_parametros.json e custos_produtos.csv em ML_CONFIG_DIR (dados da empresa)")
 class TestParametrosReais(unittest.TestCase):
-    """Le ml_parametros.json e custos_produtos.csv de verdade: a regra do painel e a mesma das analises."""
+    """Le ml_parametros.json e custos_produtos.csv de verdade: o painel aplica a mesma regra de analise/ (ml_param e ml_margem)."""
 
-    def test_imposto_igual_ao_das_analises(self):
+    def test_imposto_igual_ao_ml_param(self):
         par = RepositorioParametros()
         for conta in ("TPP", "PD"):
             for prod in ("Condro500", "Bravecto250", ""):

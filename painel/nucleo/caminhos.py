@@ -4,8 +4,8 @@ Nenhum caminho de um computador especifico: roda igual em qualquer PC (Windows, 
 
 | Variavel                  | Para que                                              | Padrao (sem a variavel)                      |
 |---------------------------|-------------------------------------------------------|----------------------------------------------|
-| ML_ANALISE_DIR            | codigo das analises (ml_margem, ml_param, ml_pedidos) | <projeto>/analise                            |
-| ML_DADOS_DIR              | coletas, monitor, vendas_api.db, travas              | <projeto>/relatorios-ml/api                  |
+| ML_ANALISE_DIR            | modulos de analise/ (ml_margem, ml_param, ml_pedidos) | <projeto>/analise                            |
+| ML_DADOS_DIR              | vendas_api.db, trava e registro da atualizacao      | <projeto>/dados                              |
 | ML_CONFIG_DIR             | ml_parametros.json e custos_produtos.csv              | <projeto>/analise                            |
 | ML_API_DIR                | tokens do ML (so quem atualiza precisa)               | <pasta pessoal de quem roda>/.ml-api         |
 | ML_CLIENT_ID / _SECRET    | app do ML (so quem atualiza precisa)                  | (nenhum: sem eles, o botao fica desligado)   |
@@ -27,7 +27,7 @@ def _dir(variavel: str, padrao: Path) -> Path:
 PROJETO = Path(__file__).resolve().parents[2]        # raiz do projeto (no Docker nao existe: tudo vem das variaveis)
 
 ANALISE = _dir("ML_ANALISE_DIR", PROJETO / "analise")
-DADOS = _dir("ML_DADOS_DIR", PROJETO / "relatorios-ml" / "api")
+DADOS = _dir("ML_DADOS_DIR", PROJETO / "dados")
 CONFIG = _dir("ML_CONFIG_DIR", PROJETO / "analise")
 
 BANCO_VENDAS = DADOS / "vendas_api.db"               # criado por ml_pedidos.py

@@ -12,7 +12,7 @@ PROJETO = Path(__file__).resolve().parents[1]
 SONDA = (
     "import sys, json; sys.path.insert(0, sys.argv[1]);"
     "from painel.nucleo import caminhos; import ml_param, ml_margem, ml_pedidos;"
-    "print(json.dumps({'dados': str(caminhos.DADOS), 'config': str(caminhos.CONFIG), 'base': str(ml_margem.BASE),"
+    "print(json.dumps({'dados': str(caminhos.DADOS), 'config': str(caminhos.CONFIG), 'banco_pai': str(ml_pedidos.BANCO.parent),"
     "'param': str(ml_param.ARQ), 'banco': str(ml_pedidos.BANCO), 'atualizar': caminhos.PERMITE_ATUALIZAR}))"
 )
 
@@ -28,8 +28,8 @@ class TestConfiguracao(unittest.TestCase):
     def test_padrao_e_o_projeto(self):
         d = sondar({})
         projeto = PROJETO
-        self.assertEqual(Path(d["dados"]), projeto / "relatorios-ml" / "api")
-        self.assertEqual(Path(d["base"]), Path(d["dados"]))                 # analises e painel olham a mesma pasta
+        self.assertEqual(Path(d["dados"]), projeto / "dados")
+        self.assertEqual(Path(d["banco_pai"]), Path(d["dados"]))            # coletor e painel olham a mesma pasta
         self.assertEqual(Path(d["param"]), projeto / "analise" / "ml_parametros.json")
         self.assertFalse(d["atualizar"])                                    # padrao: so leitura
 
@@ -37,7 +37,7 @@ class TestConfiguracao(unittest.TestCase):
         with tempfile.TemporaryDirectory() as dados, tempfile.TemporaryDirectory() as config:
             d = sondar({"ML_DADOS_DIR": dados, "ML_CONFIG_DIR": config, "PAINEL_PERMITE_ATUALIZAR": "1"})
             self.assertEqual(Path(d["dados"]), Path(dados).resolve())
-            self.assertEqual(Path(d["base"]), Path(dados).resolve())
+            self.assertEqual(Path(d["banco_pai"]), Path(dados).resolve())
             self.assertEqual(Path(d["banco"]), Path(dados).resolve() / "vendas_api.db")
             self.assertEqual(Path(d["param"]), Path(config).resolve() / "ml_parametros.json")
             self.assertTrue(d["atualizar"])

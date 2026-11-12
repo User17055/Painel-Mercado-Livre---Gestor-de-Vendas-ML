@@ -8,7 +8,7 @@ token_*.json
 # --- Dados da empresa (entram como volume / variavel de ambiente, nunca no git) ---------------------
 analise/ml_parametros.json
 analise/custos_produtos.csv
-relatorios-ml/
+dados/
 *.db
 *.sqlite
 *.sqlite3

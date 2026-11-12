@@ -9,7 +9,7 @@ na raiz do repositório.
   módulos que o painel importa; `testes\test_pacote.py` confere que a lista do Docker é exatamente essa).
 - **Fica fora do git (`.gitignore`), cada PC põe o seu:** `analise\ml_parametros.json` e `analise\custos_produtos.csv`
   (custo e imposto da empresa; recebidos pelo canal interno, ver `README.md`), a pasta de dados
-  (`relatorios-ml\api`, ou `ML_DADOS_DIR`), o `.env` e a pasta de tokens.
+  (`dados\`, ou `ML_DADOS_DIR`), o `.env` e a pasta de tokens.
 
 ## Como rodar
 **Uso combinado (11/11): um servidor só; todos acessam pelo navegador.** Quem só consulta não instala nada: abre o endereço do
@@ -27,13 +27,13 @@ Configuração: só variáveis de ambiente (tabela em `painel\nucleo\caminhos.py
 ## Estado de cada peça
 | Peça | Arquivo (caminho a partir da raiz) | Estado |
 |---|---|---|
-| Configuração portátil (pastas e modo por variável de ambiente) | `painel\nucleo\caminhos.py`, `analise\ml_param.py` (`DIR_DADOS`, `DIR_CONFIG`) | pronto e testado; relatórios das análises idênticos antes × depois (17 de 17) |
+| Configuração portátil (pastas e modo por variável de ambiente) | `painel\nucleo\caminhos.py`, `analise\ml_param.py` (`DIR_DADOS`, `DIR_CONFIG`) | pronto e testado |
 | Docker (imagem só com código; dados/parâmetros/tokens como volume) | `Dockerfile`, `.dockerignore`, `compose.yaml`, `.env.exemplo` | escrito; `docker compose config` válido; **imagem não construída** (Docker Desktop desligado e o build baixa a imagem base) |
 | Parâmetros `pedidos` e `painel` | `analise\ml_param.py` + `analise\ml_parametros.json` | pronto |
 | Lista fechada, filtro do pedido, esquema e criação do banco | `analise\ml_pedidos.py` | pronto e testado (sem comprador) |
 | Leitura dos pedidos pela API (busca, frete, cobrança, gravação) | `analise\ml_pedidos.py` | fase 1a (`NotImplementedError`) |
 | Modelos (Conta, Pedido, ItemPedido, Envio, Cobranca, CustoProduto, RegraImposto, ResultadoItem, ResumoPeriodo) | `painel\nucleo\modelos.py` | pronto e testado |
-| Custos, rebate e imposto (mesma regra das análises) | `painel\nucleo\repositorio.py` `RepositorioParametros` | pronto e testado com os parâmetros reais |
+| Custos, rebate e imposto (regra de `analise\`: `ml_param` e `ml_margem`) | `painel\nucleo\repositorio.py` `RepositorioParametros` | pronto e testado com os parâmetros reais |
 | Ler pedidos do banco | `painel\nucleo\repositorio.py` `RepositorioPedidos.pedidos` | fase 1a |
 | Lucro por item | `painel\nucleo\calculo.py` `CalculadoraLucro.resultado` | fase 1b (rateio de frete pronto e testado) |
 | Resumo por mês com acumulado, por produto, canceladas à parte | `painel\nucleo\resumo.py` | pronto e testado |
@@ -46,9 +46,8 @@ Configuração: só variáveis de ambiente (tabela em `painel\nucleo\caminhos.py
 - Testes, na raiz do repositório (Python 3.12 ou mais novo com `openpyxl`, por exemplo o `.venv` do `instalar.ps1`):
   `python -m unittest discover -s testes -t .` (12/11: 21 testes; sem os parâmetros da empresa,
   2 pulados com aviso). O GitHub roda os mesmos testes a cada push (`.github\workflows\testes.yml`).
-- Regras de privacidade e portabilidade (nenhum campo de comprador e nenhum `C:\Users\...` no código, `.ps1` só ASCII): hoje
-  checadas por uma ferramenta que **não está neste repositório**; trazer para um teste em `testes\` é o
-  primeiro passo da fase 1a.
+- Regras de privacidade e portabilidade (nenhum campo de comprador e nenhum `C:\Users\...` no código, `.ps1` só ASCII): ainda
+  sem teste automático; virar um teste em `testes\` é o passo 0 (abaixo).
 - Compose válido sem rodar nada: `docker compose config` na raiz do repositório.
 - Criar o banco vazio (não chama a API): `python analise\ml_pedidos.py criar-banco`.
 
@@ -59,7 +58,7 @@ Configuração: só variáveis de ambiente (tabela em `painel\nucleo\caminhos.py
    curto **sem gravar**; depois `RepositorioPedidos.pedidos` e as conferências API × Excel (01/09 a 30/10, venda a venda).
 2. **Fase 1b**: `CalculadoraLucro.resultado` e as três telas; construir a imagem Docker (com ok: baixa a imagem base e pacotes).
 3. **Fase 2**: filtros, gráficos, botão ligado à coleta; antes, resolver o risco dos tokens (ARQUITETURA, seção 6).
-4. Decidir qual máquina é o servidor e se o acesso é só na rede interna ou também de fora (com login).
+4. Decidir qual máquina é o servidor.
 
 ## Armadilhas já conhecidas
 - `with sqlite3.connect(...)` **não fecha** a conexão; no Windows o arquivo fica preso. Usar `contextlib.closing(...)`.

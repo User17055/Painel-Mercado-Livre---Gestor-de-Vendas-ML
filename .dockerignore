@@ -1,7 +1,7 @@
 # Lista FECHADA do que pode ir para a imagem (o contexto e a raiz do projeto, que tem dados da empresa).
-# Tudo fora, menos o codigo. Relatorio de vendas, coletas, parametros, custos e tokens NUNCA entram na imagem.
+# Tudo fora, menos o codigo. Dados de vendas, parametros, custos e tokens NUNCA entram na imagem.
 *
-# modulos de analise/ que o painel usa (as demais ferramentas da pasta ficam fora)
+# modulos de analise/ que o painel usa
 !analise/ml_param.py
 !analise/ml_margem.py
 !analise/ml_pedidos.py

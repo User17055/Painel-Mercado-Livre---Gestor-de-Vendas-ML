@@ -108,5 +108,8 @@ Lucro calculado pelo painel (banco da API) comparado com a mesma regra aplicada 
 - No relatório, as linhas de um carrinho sem dinheiro são os itens; o dinheiro está na linha do pacote (número do pacote).
 - O `.env` é pessoal (pode ter segredo): nunca enviar nem versionar; só o `.env.exemplo` circula.
 - Refresh token do ML de uso único: uma máquina só atualiza.
+- Painel no ar e código alterado (por exemplo, `git pull`): o Streamlit recarrega o código sozinho. O cache das telas leva
+  também a data dos arquivos de código, para não devolver linhas calculadas pelo código antigo (`painel\tela.py`, `_marca_dados`).
+  Mudança em `app.py` ou nas variáveis de ambiente: reiniciar o painel.
 - Docker: se `ml_parametros.json` ou `custos_produtos.csv` não existir na pasta indicada, o `compose` cria uma **pasta** com
   esse nome no lugar do arquivo. Pôr os dois arquivos (ou ajustar `ML_CONFIG_HOST` no `.env`) antes do primeiro `up`.

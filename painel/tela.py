@@ -5,6 +5,7 @@ A tela so filtra, ordena e mostra: o calculo e do nucleo (painel/nucleo). Especi
 """
 from dataclasses import asdict, is_dataclass
 from datetime import date, datetime, timedelta
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -29,8 +30,14 @@ def _marca(*arquivos) -> tuple:
     return tuple(a.stat().st_mtime if a.exists() else 0 for a in arquivos)
 
 
+def _codigo() -> list:
+    """Codigo do nucleo e de analise/: se mudar com o painel no ar (o Streamlit recarrega o codigo), o cache nao pode
+    devolver linhas calculadas pelo codigo antigo (objetos sem os campos novos quebram a tela)."""
+    return sorted(Path(caminhos.__file__).parent.glob("*.py")) + sorted(caminhos.ANALISE.glob("ml_*.py"))
+
+
 def _marca_dados() -> tuple:
-    return _marca(caminhos.BANCO_VENDAS, *(caminhos.CONFIG / f for f in ARQ_PARAMETROS))
+    return _marca(caminhos.BANCO_VENDAS, *(caminhos.CONFIG / f for f in ARQ_PARAMETROS), *_codigo())
 
 
 @st.cache_resource(show_spinner=False)

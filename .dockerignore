@@ -5,6 +5,7 @@
 !analise/ml_param.py
 !analise/ml_margem.py
 !analise/ml_pedidos.py
+!analise/ml_api.py
 !requirements.txt
 !painel/
 **/__pycache__

@@ -45,19 +45,26 @@ class ItemPedido:
 @dataclass(frozen=True)
 class Envio:
     envio_id: str
-    custo_vendedor: float        # senders[].cost de /shipments/{id}/costs
+    custo_vendedor: float        # senders[].cost de /shipments/{id}/costs (so quando a cobranca ainda nao tem o frete)
     custo_bruto: float = 0.0     # gross_amount (sem desconto do ML)
 
 
 @dataclass(frozen=True)
 class Cobranca:
-    tipo: str                    # ex.: "CV" (tarifa de venda), "CXD" (frete): /billing/.../order/details
-    valor: float
+    tipo: str                    # "<CHARGE|BONUS|RECEITA>/<CORE|SHIPPING|MP>/<subtipo>" (analise/ml_pedidos.buscar_cobrancas)
+    valor: float                 # > 0 custo para o vendedor; < 0 estorno (BONUS) ou frete pago pelo comprador
     descricao: str = ""
+    cobranca_id: str = ""        # detail_id do ML: num carrinho a mesma cobranca vem em cada pedido (o repositorio conta uma vez)
+
+    def grupo(self) -> str:
+        """CORE = tarifa de venda; SHIPPING = frete; MP = taxa de parcelamento paga pelo comprador (repasse: nao e custo)."""
+        partes = self.tipo.split("/")
+        return partes[1] if len(partes) > 1 else ""
 
 
 @dataclass
 class Pedido:
+    """Regras do liquido conferidas contra o "Total (BRL)" do relatorio de vendas do ML (docs/LEIA-ME.md, conferencia da fase 1a)."""
     conta: str
     pedido_id: str
     fechado_em: datetime
@@ -67,14 +74,50 @@ class Pedido:
     tags: tuple[str, ...] = ()
     envio: Envio | None = None
     cobrancas: list[Cobranca] = field(default_factory=list)
+    reembolsado: float = 0.0     # soma devolvida ao comprador (payments)
+    pagamento_detalhe: str = ""  # ex.: "accredited"; "bpp_covered" = o ML cobriu o reembolso e o vendedor ficou com o dinheiro
 
     def bruto(self) -> float:
         return round(sum(i.bruto() for i in self.itens), 2)
 
+    def coberto_pelo_ml(self) -> bool:
+        return "bpp_covered" in self.pagamento_detalhe
+
+    def receita(self) -> float:
+        """Bruto menos o que voltou ao comprador por conta do vendedor (se o ML cobriu, o vendedor fica com tudo).
+        O reembolso pode incluir o frete que o comprador pagou: desconta no maximo o valor dos produtos."""
+        devolvido = 0.0 if self.coberto_pelo_ml() else min(self.reembolsado, self.bruto())
+        return round(self.bruto() - devolvido, 2)
+
+    def _cancelado_sem_cobertura(self) -> bool:
+        return self.status == "cancelled" and not self.coberto_pelo_ml()
+
+    def tarifa(self) -> float:
+        """Tarifa de venda: cobrancas CORE (ja com estornos). Sem cobranca ainda, a sale_fee dos itens; cancelado sem
+        cobertura do ML e sem cobranca nao tem tarifa (nunca foi cobrada)."""
+        core = [c.valor for c in self.cobrancas if c.grupo() == "CORE"]
+        if core:
+            return round(sum(core), 2)
+        return 0.0 if self._cancelado_sem_cobertura() else round(sum(i.tarifa() for i in self.itens), 2)
+
+    def frete(self) -> float:
+        """Frete do vendedor: cobrancas SHIPPING (com estornos e menos o que o comprador pagou). Sem elas, o custo do envio
+        (o repositorio so poe o envio num pedido por envio); cancelado sem cobertura do ML nao tem frete (nunca foi cobrado)."""
+        fr = [c.valor for c in self.cobrancas if c.grupo() == "SHIPPING"]
+        if fr:
+            return round(sum(fr), 2)
+        if self._cancelado_sem_cobertura():
+            return 0.0
+        return round(self.envio.custo_vendedor if self.envio else 0.0, 2)
+
+    def liquido(self) -> float:
+        """O que o vendedor recebe: receita - tarifa - frete (= "Total (BRL)" do relatorio de vendas do ML)."""
+        return round(self.receita() - self.tarifa() - self.frete(), 2)
+
     def situacao(self) -> Situacao:
-        """Regra a confirmar no teste com dado real (fase 1a): status/tags de cancelamento e devolucao do ML."""
-        if self.status == "cancelled":
-            return Situacao.CANCELADA
+        """Cancelado com reembolso coberto pelo ML conta como venda valida (o vendedor recebeu). Cancelado e entregue = devolvido."""
+        if self._cancelado_sem_cobertura():
+            return Situacao.DEVOLVIDA if "delivered" in self.tags else Situacao.CANCELADA
         if self.status == "partially_refunded" or "refunded" in self.tags:
             return Situacao.DEVOLVIDA
         return Situacao.VALIDA

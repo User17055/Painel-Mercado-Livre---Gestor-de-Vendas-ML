@@ -85,7 +85,7 @@ def custo_mercadoria(prod, titulo, custos, rebate):
     if custo is None:
         return None
     ef = custo * (1 - (rebate / 100 if c["aplica_rebate"] == "sim" else 0)) * unidades_no_titulo(titulo)
-    # combo: Bravecto vendido junto com produto Franpet (brinde). Custo do brinde: linha BrindeFranpet de custos_produtos.csv (pendente).
+    # combo: Bravecto vendido junto com produto Franpet (brinde). Custo do brinde: linha BrindeFranpet de custos_produtos.csv (sem valor, conta 0).
     if prod.startswith("Bravecto") and re.search(r"\+\s*(fran|gourmet)", (titulo or "").lower()):
         ef += num((custos.get("BrindeFranpet") or {}).get("custo_sem_rebate"), 0.0) or 0.0
     return ef

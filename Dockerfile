@@ -16,7 +16,7 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # so os modulos de analise/ que o painel usa (mesma lista do .dockerignore; testes/test_pacote.py confere)
-COPY analise/ml_param.py analise/ml_margem.py analise/ml_pedidos.py /app/analise/
+COPY analise/ml_param.py analise/ml_margem.py analise/ml_pedidos.py analise/ml_api.py /app/analise/
 COPY painel /app/painel
 
 # usuario sem privilegio; as pastas de volume existem mesmo sem volume montado

@@ -3,16 +3,17 @@
 Painel web de vendas e lucro das contas do Mercado Livre **TUDOPRAPET (TPP)** e **PetDelivery (PD)**, com download em CSV e
 Excel. Lê a API oficial do Mercado Livre **só para leitura** e **sem dado de comprador**.
 
-**Estado:** esqueleto (estrutura, modelos, testes e Docker prontos; leitura dos pedidos pela API e telas ainda não feitas).
+**Estado:** leitura dos pedidos pela API pronta e conferida com o relatório de vendas do ML; cálculo do lucro e telas ainda
+não feitos.
 Detalhes e próximos passos: [`docs/LEIA-ME.md`](docs/LEIA-ME.md).
 
 ## Estrutura
 
 ```
 painel/        código do painel: app Streamlit (app.py), núcleo (nucleo/) e telas (paginas/)
-analise/       módulos de regra usados pelo painel: parâmetros, custo e coletor de pedidos
+analise/       módulos de regra usados pelo painel: parâmetros, custo, coletor de pedidos e acesso à API
 testes/        testes automáticos (rodam também no GitHub a cada push)
-docs/          documentação: LEIA-ME (estado e como rodar), ARQUITETURA, PLANO (requisitos e fases)
+docs/          documentação: LEIA-ME (estado e como rodar), ARQUITETURA, PLANO (requisitos e fases), TELAS
 Dockerfile, compose.yaml, .dockerignore, requirements.txt, .env.exemplo, instalar.ps1, rodar.ps1   (na raiz)
 ```
 

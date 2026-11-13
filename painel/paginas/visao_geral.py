@@ -8,7 +8,7 @@ from painel.nucleo.repositorio import RepositorioPedidos
 st.title("Visão geral")
 repo = RepositorioPedidos()
 if not repo.existe():
-    st.info("Ainda sem vendas pela API: o coletor de pedidos (fase 1a) não rodou.")
+    st.info("Ainda sem vendas pela API: o banco de pedidos não existe (gravar com analise/ml_pedidos.py --gravar).")
 else:
     for conta in ("TPP", "PD"):
         st.write(f"{conta}: última atualização {repo.ultima_atualizacao(conta) or '—'}")

@@ -4,13 +4,13 @@ Nenhum caminho de um computador especifico: roda igual em qualquer PC (Windows, 
 
 | Variavel                  | Para que                                              | Padrao (sem a variavel)                      |
 |---------------------------|-------------------------------------------------------|----------------------------------------------|
-| ML_ANALISE_DIR            | modulos de analise/ (ml_margem, ml_param, ml_pedidos) | <projeto>/analise                            |
+| ML_ANALISE_DIR            | modulos de analise/ (ml_margem, ml_param, ml_pedidos, ml_api) | <projeto>/analise                    |
 | ML_DADOS_DIR              | vendas_api.db, trava e registro da atualizacao      | <projeto>/dados                              |
 | ML_CONFIG_DIR             | ml_parametros.json e custos_produtos.csv              | <projeto>/analise                            |
 | ML_API_DIR                | tokens do ML (so quem atualiza precisa)               | <pasta pessoal de quem roda>/.ml-api         |
-| ML_CLIENT_ID / _SECRET    | app do ML (so quem atualiza precisa)                  | (nenhum: sem eles, o botao fica desligado)   |
+| ML_CLIENT_ID / _SECRET    | app do ML (so quem atualiza precisa)                  | (nenhum: sem eles, o token nao renova)       |
 | PAINEL_PERMITE_ATUALIZAR  | 1 = mostra o botao "Atualizar agora"; 0 = so leitura  | 0                                            |
-As mesmas variaveis valem para os modulos de analise\\ que o painel usa (ml_param, ml_margem, ml_pedidos).
+As mesmas variaveis valem para os modulos de analise\\ que o painel usa (ml_param, ml_margem, ml_pedidos, ml_api).
 <projeto> = a pasta que contem analise\\ e painel\\ (descoberta a partir deste arquivo).
 Unico modulo do painel que mexe no sys.path: todo outro modulo do nucleo importa daqui antes de importar ml_*.
 """

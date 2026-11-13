@@ -24,7 +24,7 @@ DIR_DADOS = _dir("ML_DADOS_DIR", AQUI.parent / "dados")                      # v
 ARQ = DIR_CONFIG / "ml_parametros.json"
 
 PADRAO = {
-    "rebate": {"percentual": 11.0, "aplicar": False, "comparar": True},
+    "rebate": {"percentual": 0.0, "aplicar": False, "comparar": True},             # o % de verdade vem so do ml_parametros.json
     "imposto": {"aliquota_pct": {"PD": None, "TPP": None}, "credito_custo_pct": {"PD": None, "TPP": None},
                 "regime": {"PD": "simples", "TPP": "lucro_real"}, "por_produto": {}},
     "pedidos": {"inicio": "2026-01-01", "lote_cobranca": 60, "por_pagina": 50},     # coletor de pedidos (ml_pedidos.py)

@@ -31,6 +31,10 @@ PROJETO = Path(__file__).resolve().parents[1]
 CAMPOS_COMPRADOR = ("buyer", "payer", "receiver", "nickname", "first_name", "last_name", "email", "doc_number", "phone",
                     "address")
 _RX_COMPRADOR = re.compile(r"(?<![a-z])(" + "|".join(CAMPOS_COMPRADOR) + r")(?![a-z])", re.I)
+# Excecoes nomeadas: campos com um desses pedacos no nome que sao VALOR, nao identidade. Cada uma com o motivo.
+CAMPOS_PERMITIDOS = {
+    "receiver_shipping_cost": "quanto o comprador pagou de frete (vira 'receita por envio' do vendedor); so um numero",
+}
 
 
 def _codigo():
@@ -76,6 +80,8 @@ class TestCodigoSemCampoDeComprador(unittest.TestCase):
         achados = []
         for arq in _codigo():
             for n, linha in enumerate(arq.read_text(encoding="utf-8").splitlines(), 1):
+                for permitido in CAMPOS_PERMITIDOS:
+                    linha = linha.replace(permitido, "")
                 m = _RX_COMPRADOR.search(linha)
                 if m:
                     achados.append(f"{arq.relative_to(PROJETO)}:{n}: {m.group(0)}")
@@ -86,6 +92,15 @@ class TestCodigoSemCampoDeComprador(unittest.TestCase):
             self.assertTrue(_RX_COMPRADOR.search(exemplo), exemplo)
         for exemplo in ("comprador descartado", "quantidade", "anuncio_id"):
             self.assertFalse(_RX_COMPRADOR.search(exemplo), exemplo)
+
+    def test_excecao_e_so_o_nome_inteiro(self):
+        # a excecao nao abre a porta para outros campos do mesmo grupo (nome, endereco, apelido do destinatario)
+        for vizinho in ("receiver_name", "receiver_address", "receiver_id", "x = d['receiver']"):
+            limpo = vizinho
+            for permitido in CAMPOS_PERMITIDOS:
+                limpo = limpo.replace(permitido, "")
+            self.assertTrue(_RX_COMPRADOR.search(limpo), vizinho)
+        self.assertEqual(set(CAMPOS_PERMITIDOS), {ml_pedidos.CAMPO_FRETE_COMPRADOR})   # a unica excecao e a do coletor
 
 
 if __name__ == "__main__":

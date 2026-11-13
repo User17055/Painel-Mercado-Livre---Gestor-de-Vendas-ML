@@ -5,19 +5,21 @@ RepositorioPedidos     vendas_api.db (gravado por analise\\ml_pedidos.py) -> Ped
 RepositorioParametros  ml_parametros.json + custos_produtos.csv (via ml_param e ml_margem) -> CustoProduto, RegraImposto, rebate
 """
 import sqlite3
+from collections import defaultdict
 from contextlib import closing
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 from painel.nucleo import caminhos
-from painel.nucleo.modelos import Conta, CustoProduto, Pedido, RegraImposto
+from painel.nucleo.modelos import Cobranca, Conta, CustoProduto, Envio, ItemPedido, Pedido, RegraImposto
 
 import ml_margem as M  # noqa: E402  (caminhos poe analise\ no sys.path)
 import ml_param  # noqa: E402
+import ml_pedidos  # noqa: E402
 
 
 class RepositorioPedidos:
-    """Le pedidos do banco da API. Fase 1a: implementar depois que ml_pedidos gravar dado real."""
+    """Le pedidos do banco da API (gravado por analise/ml_pedidos.py)."""
 
     def __init__(self, banco: Path = caminhos.BANCO_VENDAS):
         self.banco = Path(banco)
@@ -31,8 +33,44 @@ class RepositorioPedidos:
         return con
 
     def pedidos(self, conta: str, de: date | None = None, ate: date | None = None) -> list[Pedido]:
-        """Pedidos da conta no periodo (pela data de fechamento), com itens, envio e cobrancas."""
-        raise NotImplementedError("fase 1a: montar Pedido a partir de pedidos + pedido_itens + envios + cobrancas")
+        """Pedidos da conta no periodo (dia de fechamento em Brasilia, como no relatorio do ML), com itens, envio e cobrancas.
+        Carrinho: a mesma cobranca (mesmo cobranca_id) vem em cada pedido do pacote; fica so no primeiro pedido (por id).
+        O custo do envio (reserva, quando a cobranca ainda nao tem o frete) fica so no primeiro pedido do envio, e so se
+        nenhum pedido daquele envio tiver cobranca de frete: um carrinho tem um envio so."""
+        if not self.existe():
+            return []
+        with closing(self._conexao()) as con:
+            peds = [dict(r) for r in con.execute("SELECT * FROM pedidos WHERE conta = ? ORDER BY pedido_id", (conta,))]
+            itens, cobs = defaultdict(list), defaultdict(list)
+            for r in con.execute("SELECT * FROM pedido_itens WHERE conta = ? ORDER BY pedido_id, seq", (conta,)):
+                itens[r["pedido_id"]].append(ItemPedido(r["anuncio_id"] or "", r["titulo"] or "", int(r["quantidade"] or 0),
+                                                        float(r["preco_unit"] or 0), float(r["tarifa_unit"] or 0),
+                                                        r["tipo_anuncio"] or "", str(r["variacao_id"] or ""), r["sku"] or ""))
+            for r in con.execute("SELECT * FROM cobrancas WHERE conta = ? ORDER BY pedido_id, seq", (conta,)):
+                cobs[r["pedido_id"]].append(Cobranca(r["tipo"], float(r["valor"] or 0), r["descricao"] or "", r["cobranca_id"] or ""))
+            envios = {r["envio_id"]: Envio(str(r["envio_id"]), float(r["custo_vendedor"] or 0), float(r["custo_bruto"] or 0))
+                      for r in con.execute("SELECT * FROM envios WHERE conta = ?", (conta,))}
+        com_frete = {p["envio_id"] for p in peds if any(c.grupo() == "SHIPPING" for c in cobs[p["pedido_id"]])}
+        vistas, envios_usados, saida = set(), set(), []
+        for p in peds:
+            dia = ml_pedidos.dia_local(p["fechado_em"])
+            if (de and dia < de.isoformat()) or (ate and dia > ate.isoformat()):
+                continue
+            proprias = []
+            for c in cobs[p["pedido_id"]]:
+                if c.cobranca_id and c.cobranca_id in vistas:
+                    continue
+                vistas.add(c.cobranca_id)
+                proprias.append(c)
+            envio = None
+            if p["envio_id"] and p["envio_id"] not in com_frete and p["envio_id"] not in envios_usados:
+                envio = envios.get(p["envio_id"])
+                envios_usados.add(p["envio_id"])
+            saida.append(Pedido(conta, str(p["pedido_id"]), datetime.fromisoformat(p["fechado_em"]).astimezone(ml_pedidos.FUSO_BR),
+                                p["status"] or "", itens[p["pedido_id"]], str(p["pack_id"] or ""),
+                                tuple(t for t in (p["tags"] or "").split(",") if t), envio, proprias,
+                                float(p["reembolsado"] or 0), p["pagamento_detalhe"] or ""))
+        return saida
 
     def ultima_atualizacao(self, conta: str) -> str | None:
         """Fim da ultima execucao da coleta de pedidos da conta (tabela execucoes), para mostrar na tela."""

@@ -53,27 +53,33 @@ API do ML (só GET) --> coletor de pedidos (lista fechada de campos) --> vendas_
 | 3 | Downloads | cada tabela em CSV e um Excel com abas (Resumo, Por produto, Vendas, Custos, Rebate, Imposto, Premissas) | as mesmas |
 
 Filtros (requisito 11): conta (TPP, PD, as duas), período, produto, tipo de anúncio (Clássico/Premium).
+Desenho de cada página, colunas, pendências e decisões das telas (aprovadas em 13/11): `TELAS.md`.
 
 ## 5. Vendas pela API
-Fonte: documentação do ML (páginas gerenciamento-de-vendas, gerenciamento-de-envios, provisoes). Nada testado ainda.
+Fonte: documentação do ML (páginas gerenciamento-de-vendas, gerenciamento-de-envios, provisoes), **testada com dado real
+na fase 1a** (as duas contas).
 
 | O quê | Endpoint (só GET) | Campos que entram (lista fechada) |
 |---|---|---|
-| Pedidos | `/orders/search?seller=` + filtro de data (`order.date_closed.from/to`), 50 por página | id, data, status, tags, pack_id, por item: id do anúncio, variação, SKU, quantidade, `unit_price` (já com desconto), `sale_fee`, tipo de anúncio, cupom, cancelamento |
-| Frete do vendedor | `/shipments/{id}/costs` (cabeçalho `x-format-new: true`) | `senders[].cost` (o que o vendedor pagou) e descontos do ML no frete |
-| Cobrança por venda | `/billing/integration/group/ML/order/details?order_ids=` (até 60 por chamada) | tarifa bruta/líquida, descontos, frete cobrado, data de liberação do dinheiro |
+| Pedidos | `/orders/search?seller=` + filtro de data (`order.date_closed.from/to`), 50 por página | id, data, status, tags, pack_id, por item: id do anúncio, variação, SKU, quantidade, `unit_price` (já com desconto), `sale_fee`, tipo de anúncio, cupom; do pagamento só situação, detalhe e valor reembolsado |
+| Cobrança por venda (fonte principal de tarifa e frete) | `/billing/integration/group/ML/order/details?order_ids=` (até 60 por chamada) | cada cobrança: id, tipo (tarifa, frete, parcelamento), valor, descrição; e o frete pago pelo comprador |
+| Frete do vendedor (só envio sem frete na cobrança) | `/shipments/{id}/costs` (cabeçalho `x-format-new: true`) | `senders[].cost` (o que o vendedor pagou) e o custo bruto |
 
-- **Líquido por venda** = preço × unidades − tarifa − frete do vendedor (fórmula da própria doc), conferido contra a cobrança.
+- **Líquido por venda**: regra em `ARQUITETURA.md`, seção 3 (receita − tarifa − frete, com reembolso, cobertura do ML,
+  frete pago pelo comprador e carrinho tratados).
 - **Comprador:** o pedido traz `buyer` (id e apelido) e a cobrança traz `payer_nickname`. O coletor descarta esses campos na
   hora de ler (lista fechada do que entra); nada de comprador é gravado, mostrado ou baixado. Os testes conferem isso.
-- **Limites da API a tratar no teste:**
+- **Limites da API (vistos no teste):**
   - pedidos só dos últimos 12 meses (o período padrão, 2026, cabe);
-  - a busca do vendedor esconde pedidos cancelados: canceladas/devolvidas podem precisar de outra consulta (status) ou da cobrança;
-  - a doc não informa limite numérico de chamadas (só "por app e por endpoint"; em 429, esperar e repetir).
-- **Carga inicial** (uma vez, devagar): PD ~4 mil pedidos no ano → ~80 páginas de busca + ~70 de cobrança + 1 de frete por
-  envio (~4 mil); TPP bem menos. Depois, incremental: só os pedidos desde a última atualização (poucas dezenas de chamadas).
-- **Prova de que é "fiel"** (antes de valer): para 01/09 a 30/10/2026, o líquido calculado pela API tem que bater com o
-  "Total (BRL)" do relatório de vendas do ML (Excel) do mesmo período, venda por venda. Diferença vira explicação escrita ou correção.
+  - a doc diz que a busca do vendedor esconde cancelados, mas na prática eles vieram (com situação "cancelado");
+  - o filtro de data ignora os minutos: o coletor busca com folga e corta pelo dia em Brasília;
+  - a cobrança tem limite de chamadas mais apertado (devolve erro 400 com "[429]"): o coletor espaça os lotes e repete;
+  - leitura com qualquer erro não é gravada (o banco nunca fica com um período pela metade).
+- **Carga inicial** (uma vez, devagar): PD ~4 mil pedidos no ano → ~80 páginas de busca + ~70 de cobrança + poucas
+  consultas de frete (só envios ainda sem cobrança); TPP bem menos. Depois, incremental: só os pedidos desde a última
+  atualização (poucas dezenas de chamadas).
+- **Prova de que é "fiel"** (feita na fase 1a; resultado em `LEIA-ME.md`): o líquido calculado pela API comparado com o
+  "Total (BRL)" do relatório de vendas do ML (Excel), venda por venda, em setembro e outubro. Diferença vira explicação escrita ou correção.
 - Guardado em SQLite (`vendas_api.db`), só com os campos da lista fechada.
 
 ## 5b. Atualização dos dados (requisito 13)
@@ -110,7 +116,7 @@ Proposta: A; B só se o PC não puder ficar ligado.
      imposto fica igual ao antes, com aviso. Crédito não se aplica ao Simples.
    - O painel mostra de onde veio cada alíquota. Canceladas/devolvidas separadas.
 4. **Período padrão:** 2026 inteiro, mês a mês e acumulado.
-5. **Quem acessa:** a equipe, pelo navegador. Falta: o que cada um vê (todos tudo?).
+5. **Quem acessa:** a equipe, pelo navegador; todos veem tudo (as duas contas e os custos), decidido em 13/11.
 6. **Onde roda:** servidor único, acesso web na rede da empresa (decidido 11/11). Falta: qual máquina (seção 6).
 
 ## 8. Fases (cada fase entrega algo usável)

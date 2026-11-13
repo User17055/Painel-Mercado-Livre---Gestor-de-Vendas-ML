@@ -1,5 +1,5 @@
 # Arquitetura do painel de vendas (TPP + PD)
-Roda em qualquer PC e no Docker. Coleta e líquido prontos (fase 1a); cálculo do lucro e telas na fase 1b.
+Roda em qualquer PC e no Docker. Coleta e líquido prontos (fase 1a); cálculo do lucro pronto (fase 1b, núcleo); telas na fase 1b.
 Requisitos e fases: `PLANO-PAINEL-ML.md`. Estado de cada peça e como rodar: `LEIA-ME.md`. Telas: `TELAS.md` (todos nesta
 pasta `docs`).
 
@@ -78,15 +78,21 @@ duas contas, em dois meses inteiros: ver `LEIA-ME.md`, "Conferência da fase 1a"
 - carrinho: a mesma cobrança (mesmo `cobranca_id`) vem em cada pedido do pacote e o envio é um só; o repositório conta uma vez;
 - **líquido** = receita − tarifa − frete.
 
-Por item de pedido (fase 1b): tarifa e frete do pedido **rateados pelo bruto** entre os itens;
+Por item de pedido (`CalculadoraLucro.resultado`): receita, tarifa e frete do pedido **rateados pelo bruto** entre os itens
+(a soma dos itens = líquido do pedido);
 - custo = `ml_margem.custo_mercadoria(produto, título, custos, rebate=0)` × quantidade (kit e brinde já tratados lá);
 - rebate = custo sem rebate − custo com rebate, pela mesma função (só produtos com `aplica_rebate=sim` em `custos_produtos.csv`;
   % do parâmetro `rebate`; com × sem);
 - **lucro antes do imposto** = líquido − custo + rebate  (fórmula da tarefa original);
-- imposto = bruto × débito % − custo da mercadoria × crédito % (crédito = 0 no Simples; `ml_param.imposto_pct/credito_pct`);
+- lucro com rebate (comparação, só com `rebate.comparar` = true) = líquido − custo + rebate calculado com `rebate.percentual`;
+- imposto = bruto × débito % − custo da mercadoria (já com o rebate, se aplicado) × crédito % (crédito = 0 no Simples;
+  `ml_param.imposto_pct/credito_pct`);
 - **lucro depois do imposto** = lucro antes − imposto. Regra sem alíquota (PD hoje) → imposto 0 e aviso "imposto pendente".
 - situação: `valida`, `cancelada`, `devolvida` (canceladas/devolvidas ficam fora dos totais e em lista separada). Cancelado com
-  reembolso coberto pelo ML conta como `valida`; cancelado e entregue sem cobertura conta como `devolvida`.
+  reembolso coberto pelo ML conta como `valida`; cancelado e entregue sem cobertura conta como `devolvida`. Cancelada ou
+  devolvida não tem custo de mercadoria (o produto volta ao estoque): o lucro dela é o próprio líquido (o que o ML cobrou);
+- custo pendente: custo e lucro ficam vazios ("—") com o aviso "custo pendente" (ou "produto não identificado pelo título");
+- **margem** = lucro depois do imposto ÷ líquido, só dos itens com custo (item sem custo fica fora do lucro e da base).
 
 ## 4. Banco `vendas_api.db` (só a lista fechada; esquema em `analise\ml_pedidos.py`)
 | Tabela | Chave | Colunas |

@@ -11,6 +11,14 @@ from datetime import datetime
 from enum import Enum
 
 
+TIPOS_ANUNCIO = {"gold_special": "Clássico", "gold_pro": "Premium"}
+
+
+def nome_tipo(tipo: str) -> str:
+    """Nome do tipo de anuncio na tela (o banco guarda o codigo do ML)."""
+    return TIPOS_ANUNCIO.get(tipo, tipo or "")
+
+
 class Situacao(str, Enum):
     VALIDA = "valida"
     CANCELADA = "cancelada"
@@ -149,21 +157,24 @@ class RegraImposto:
 
 @dataclass
 class ResultadoItem:
-    """Uma linha da aba/tela "Vendas": um item de pedido com o lucro calculado. Sem comprador."""
+    """Uma linha da aba/tela "Vendas": um item de pedido com o lucro calculado. Sem comprador.
+    Ordem dos campos = ordem das colunas da aba Vendas (docs/TELAS.md, secao 4)."""
     conta: str
     data: datetime
     pedido_id: str
     anuncio_id: str
     titulo: str
     produto: str
+    tipo_anuncio: str                  # "Clássico" / "Premium" (nome_tipo)
     unidades: int
     bruto: float
     tarifa: float
     frete: float
     liquido: float
-    custo: float | None
-    rebate: float
+    custo: float | None                # custo da mercadoria SEM rebate; None = pendente
+    rebate: float                      # rebate do calculo principal (0 se rebate.aplicar = false)
     lucro_antes_imposto: float | None
+    lucro_com_rebate: float | None     # lucro antes do imposto com o % de rebate.percentual (so com rebate.comparar = true)
     imposto: float
     lucro_depois_imposto: float | None
     situacao: Situacao = Situacao.VALIDA
@@ -175,16 +186,42 @@ class ResumoPeriodo:
     """Uma linha do Resumo: conta x periodo (mes) ou conta x produto, com acumulado."""
     conta: str
     periodo: str                 # "AAAA-MM" ou nome do produto
+    vendas: int = 0              # pedidos distintos
     unidades: int = 0
     bruto: float = 0.0
     liquido: float = 0.0
     custo: float = 0.0
     rebate: float = 0.0
-    imposto: float = 0.0
     lucro_antes_imposto: float = 0.0
+    lucro_com_rebate: float | None = None
+    imposto: float = 0.0
     lucro_depois_imposto: float = 0.0
     acumulado: float = 0.0
     sem_custo_un: int = 0        # unidades sem custo (ficam fora do lucro e aparecem como aviso)
+    _liquido_com_custo: float = 0.0   # base da margem (interno: nao vai para CSV/Excel)
 
     def margem_pct(self) -> float | None:
-        return round(self.lucro_depois_imposto / self.liquido * 100, 1) if self.liquido else None
+        """Lucro depois do imposto sobre o liquido do ML (decisao 3 de docs/TELAS.md). Itens sem custo ficam fora do lucro,
+        entao ficam fora da base tambem (senao a margem sairia menor do que e)."""
+        base = self._liquido_com_custo if self.sem_custo_un else self.liquido
+        return round(self.lucro_depois_imposto / base * 100, 1) if base else None
+
+
+@dataclass
+class ResumoAnuncio:
+    """Uma linha da aba "Por anuncio": conta x anuncio."""
+    conta: str
+    anuncio_id: str
+    titulo: str
+    tipo_anuncio: str
+    produto: str
+    vendas: int = 0
+    unidades: int = 0
+    liquido: float = 0.0
+    lucro_depois_imposto: float = 0.0
+    sem_custo_un: int = 0
+    _liquido_com_custo: float = 0.0
+
+    def margem_pct(self) -> float | None:
+        base = self._liquido_com_custo if self.sem_custo_un else self.liquido
+        return round(self.lucro_depois_imposto / base * 100, 1) if base else None

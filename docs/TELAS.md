@@ -91,11 +91,11 @@ Um eixo por gráfico (nunca dois eixos de escalas diferentes):
 - lucro por produto (barras horizontais, do maior ao menor).
 
 ## 8. O que muda no código para isso (fase 1b)
-- `CalculadoraLucro.resultado`: escrever (fórmulas da ARQUITETURA, seção 3), com rebate com × sem.
-- `ResultadoItem`: ganhar `tipo_anuncio` (filtro e coluna) e `lucro_com_rebate` (coluna de comparação).
-- `resumo.por_anuncio` (aba Por anúncio) e o montador das abas Custos, Rebate, Imposto e Premissas do Excel.
-- Leitura do banco com cache por data da última atualização (a tela não relê tudo a cada clique).
-- Teste: total da tela = total do núcleo = total do relatório do ML no período conferido.
+- Feito: `CalculadoraLucro.resultado` (fórmulas da ARQUITETURA, seção 3, com rebate com × sem); `ResultadoItem` com
+  `tipo_anuncio` e `lucro_com_rebate`; `resumo.por_anuncio`, `resumo.total` e `resumo.abas_excel` (todas as abas).
+- Falta: as três páginas e:
+  - leitura do banco com cache por data da última atualização (a tela não relê tudo a cada clique).
+  - teste: total da tela = total do núcleo = total do relatório do ML no período conferido.
 
 ## 9. Decisões (aprovadas em 13/11/2026)
 1. Filtros de conta e período já na 1b; produto e tipo de anúncio na fase 2.

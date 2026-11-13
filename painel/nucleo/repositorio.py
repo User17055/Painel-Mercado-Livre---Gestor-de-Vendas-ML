@@ -105,6 +105,25 @@ class RepositorioParametros:
         """Rebate do calculo principal (0 se 'aplicar' = false) e o de comparacao (com x sem) ficam no parametro 'rebate'."""
         return ml_param.rebate_efetivo(self.P)
 
+    def rebate_comparacao(self) -> float | None:
+        """% do cenario "com rebate" mostrado ao lado (rebate.comparar = true); None se a comparacao esta desligada."""
+        r = self.P["rebate"]
+        return float(r["percentual"]) if r.get("comparar") else None
+
+    def custos(self) -> list[CustoProduto]:
+        """Todos os produtos da tabela de custos (aba Custos do Excel)."""
+        return [self.custo(p) for p in self._custos]
+
+    def regras_imposto(self) -> list[RegraImposto]:
+        """Regra padrao de cada conta e as excecoes por produto (aba Imposto do Excel)."""
+        out = []
+        for c in M.CONTAS:
+            out.append(self.regra_imposto(c))
+            for prefixo in ((self.P["imposto"].get("por_produto") or {}).get(c) or {}):
+                if not prefixo.startswith("_"):
+                    out.append(self.regra_imposto(c, prefixo))
+        return out
+
     def regra_imposto(self, conta: str, produto: str | None = None) -> RegraImposto:
         deb = ml_param.imposto_pct(self.P, conta, produto) if ml_param.tem_imposto(self.P, conta) else None
         cred = ml_param.credito_pct(self.P, conta, produto) or 0.0

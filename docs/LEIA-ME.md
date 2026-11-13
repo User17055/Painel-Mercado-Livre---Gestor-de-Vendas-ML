@@ -1,6 +1,6 @@
 # Painel de vendas e lucro do ML (TPP + PD): LEIA-ME
-Estado em 13/11/2026: **coletor de pedidos pronto e conferido (fase 1a)**; cálculo de lucro e telas na fase 1b. Roda em
-qualquer PC.
+Estado em 13/11/2026: **coletor de pedidos pronto e conferido (fase 1a)**; **cálculo do lucro, resumos e Excel prontos e
+conferidos (fase 1b, núcleo)**; telas na fase 1b. Roda em qualquer PC.
 Requisitos e fases: `PLANO-PAINEL-ML.md`. Camadas, classes, fórmulas e modos de uso: `ARQUITETURA.md`. Telas: `TELAS.md`
 (os três nesta pasta).
 Código: `painel\`, `analise\` e `testes\` (esta pasta `docs` não tem código; as pastas de código não têm documentação). Visão geral: `README.md`
@@ -39,8 +39,9 @@ Configuração: só variáveis de ambiente (tabela em `painel\nucleo\caminhos.py
 | Custos, rebate e imposto (regra de `analise\`: `ml_param` e `ml_margem`) | `painel\nucleo\repositorio.py` `RepositorioParametros` | pronto e testado com os parâmetros reais |
 | Ler pedidos do banco | `painel\nucleo\repositorio.py` `RepositorioPedidos.pedidos` | pronto e testado (carrinho contado uma vez) |
 | Líquido do pedido (receita − tarifa − frete) | `painel\nucleo\modelos.py` `Pedido.liquido` | pronto e conferido |
-| Lucro por item | `painel\nucleo\calculo.py` `CalculadoraLucro.resultado` | fase 1b (rateio de frete pronto e testado) |
-| Resumo por mês com acumulado, por produto, canceladas à parte | `painel\nucleo\resumo.py` | pronto e testado |
+| Lucro por item (rebate com × sem, imposto, avisos) | `painel\nucleo\calculo.py` `CalculadoraLucro.resultado` | pronto, testado e conferido (ver "Conferência da fase 1b") |
+| Resumo por mês com acumulado, por produto, por anúncio, total; canceladas à parte | `painel\nucleo\resumo.py` | pronto e testado |
+| Abas do Excel (Resumo, Por produto, Por anúncio, Vendas, Canceladas, Custos, Rebate, Imposto, Premissas) | `painel\nucleo\resumo.py` `abas_excel` | pronto e testado |
 | CSV e Excel (Arial, autor, abas) | `painel\nucleo\exportar.py` | pronto e testado |
 | Botão "Atualizar agora": trava e intervalo | `painel\nucleo\atualizar.py` | pronto e testado (ligar à coleta: fase 2; ver risco dos tokens na ARQUITETURA, seção 6) |
 | Conferências: sem comprador / API × Excel / unidades | `painel\nucleo\conferencia.py` | prontas (também por linha de comando) |
@@ -48,7 +49,7 @@ Configuração: só variáveis de ambiente (tabela em `painel\nucleo\caminhos.py
 
 ## Como conferir
 - Testes, na raiz do repositório (Python 3.12 ou mais novo com `openpyxl`, por exemplo o `.venv` do `instalar.ps1`):
-  `python -m unittest discover -s testes -t .` (43 testes; sem os parâmetros da empresa,
+  `python -m unittest discover -s testes -t .` (53 testes; sem os parâmetros da empresa,
   2 pulados com aviso). O GitHub roda os mesmos testes a cada push (`.github\workflows\testes.yml`).
 - Regras fixas conferidas pelos testes: nenhum nome de campo de comprador no código (`test_privacidade.py`); nenhum
   `C:\Users\...` em código e configuração, `.ps1` só ASCII e nenhum pedido de escrita à API (`test_regras_do_codigo.py`);
@@ -57,6 +58,8 @@ Configuração: só variáveis de ambiente (tabela em `painel\nucleo\caminhos.py
 - Criar o banco vazio (não chama a API): `python analise\ml_pedidos.py criar-banco`.
 - Ler pedidos (só GET; precisa dos tokens e de `ML_CLIENT_ID`/`ML_CLIENT_SECRET`), na pasta `analise\`:
   `python ml_pedidos.py <CONTA> --desde AAAA-MM-DD [--ate AAAA-MM-DD]` mostra o resumo **sem gravar**; com `--gravar`, grava.
+- Resumo de lucro do banco e o Excel com todas as abas (não chama a API), na raiz:
+  `python -m painel.nucleo.resumo <TPP|PD|TODAS> <AAAA-MM-DD> <AAAA-MM-DD> [--excel <pasta>]`.
 - Conferir o banco contra o relatório de vendas exportado do ML (não chama a API), na raiz:
   `python -m painel.nucleo.conferencia <CONTA> <relatorio.xlsx> <AAAA-MM-DD> <AAAA-MM-DD>`.
 
@@ -72,12 +75,21 @@ data de exportação do relatório (fim de outubro), nas duas contas.
 - As regras do líquido que saíram da conferência estão em `ARQUITETURA.md`, seção 3, e cada uma tem teste em
   `testes\test_pedidos.py`.
 
+## Conferência da fase 1b
+Lucro calculado pelo painel (banco da API) comparado com a mesma regra aplicada ao relatório de vendas exportado do ML
+(`ml_margem.custo_mercadoria` e `ml_param`), no período da conferência da fase 1a, nas duas contas:
+- **TPP:** líquido e lucro antes do imposto iguais ao centavo nos dois meses; imposto igual venda a venda (todas as vendas).
+  No total do mês sobram centavos de arredondamento (o painel arredonda cada venda).
+- **PD:** setembro igual ao centavo; outubro com a diferença já explicada na fase 1a (a venda cancelada depois da exportação:
+  o relatório ainda a conta como venda, com o custo dela).
+- Cada regra tem teste com números inventados em `testes\test_calculo.py`.
+
 ## Próximos passos (ordem)
 0. **Organização (feito):** as regras de privacidade e portabilidade viraram teste (ver "Como conferir"). Fluxo da equipe:
    cada pessoa trabalha na sua própria branch e leva o trabalho para a `main` por merge, com os testes passando.
 1. **Fase 1a (feito):** coletor (só GET), banco, `RepositorioPedidos.pedidos`, líquido e conferências. Falta só a carga
    inicial de 2026 no banco de verdade (`--gravar`, uma conta por vez), na máquina que vai guardar os dados.
-2. **Fase 1b** (telas aprovadas em `TELAS.md`): `CalculadoraLucro.resultado` e as três telas;
+2. **Fase 1b** (telas aprovadas em `TELAS.md`): núcleo feito (lucro, resumos, Excel); faltam as três telas;
    instalar os pacotes da tela e construir a imagem Docker (com ok: baixa a imagem base e pacotes).
 3. **Fase 2**: filtros, gráficos, botão ligado à coleta; antes, resolver o risco dos tokens (ARQUITETURA, seção 6).
 4. Decidir qual máquina é o servidor.

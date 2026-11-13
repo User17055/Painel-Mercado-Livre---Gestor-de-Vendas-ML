@@ -14,8 +14,10 @@ import ml_param  # noqa: E402
 
 
 def linha(conta, dia, liquido, custo, lucro, situacao=Situacao.VALIDA, produto="Bravecto250"):
-    return ResultadoItem(conta, datetime.fromisoformat(dia), "1", "MLB1", "t", produto, 1, liquido, 0, 0, liquido, custo, 0,
-                         lucro, 0, lucro, situacao)
+    return ResultadoItem(conta=conta, data=datetime.fromisoformat(dia), pedido_id=dia, anuncio_id="MLB1", titulo="t",
+                         produto=produto, tipo_anuncio="Clássico", unidades=1, bruto=liquido, tarifa=0, frete=0, liquido=liquido,
+                         custo=custo, rebate=0, lucro_antes_imposto=lucro, lucro_com_rebate=None, imposto=0,
+                         lucro_depois_imposto=lucro, situacao=situacao)
 
 
 class TestModelos(unittest.TestCase):
@@ -83,7 +85,7 @@ class TestExportar(unittest.TestCase):
     def test_csv(self):
         b = exportar.para_csv([linha("TPP", "2026-11-05", 100.5, 80, 10)])
         txt = b.decode("utf-8-sig")
-        self.assertTrue(txt.startswith("conta;data;"))
+        self.assertTrue(txt.startswith("Conta;Data;"))
         self.assertIn("100,50", txt)
         self.assertIn("valida", txt)
 
@@ -94,7 +96,7 @@ class TestExportar(unittest.TestCase):
         self.assertEqual(wb.properties.creator, exportar.AUTOR)
         self.assertEqual(wb.sheetnames, ["Resumo", "Vazia"])
         self.assertEqual(wb["Resumo"]["A1"].font.name, "Arial")
-        self.assertEqual(wb["Resumo"]["A1"].value, "conta")
+        self.assertEqual(wb["Resumo"]["A1"].value, "Conta")
 
 
 if __name__ == "__main__":

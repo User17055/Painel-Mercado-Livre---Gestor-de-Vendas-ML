@@ -16,7 +16,7 @@ FONTE = "Arial"
 
 
 ROTULOS = {  # cabecalho das colunas (campo do nucleo -> nome na planilha); campo fora da lista sai com o proprio nome
-    "conta": "Conta", "periodo": "Período", "data": "Data", "pedido_id": "Pedido", "anuncio_id": "Anúncio",
+    "conta": "Conta", "periodo": "Período", "data": "Data", "pedido_id": "Pedido", "venda_id": "Venda", "anuncio_id": "Anúncio",
     "titulo": "Título", "produto": "Produto", "tipo_anuncio": "Tipo", "vendas": "Vendas", "unidades": "Unidades",
     "bruto": "Bruto", "tarifa": "Tarifa", "frete": "Frete", "liquido": "Líquido", "custo": "Custo", "rebate": "Rebate",
     "lucro_antes_imposto": "Lucro antes do imposto", "lucro_com_rebate": "Lucro antes com rebate (comparação)",

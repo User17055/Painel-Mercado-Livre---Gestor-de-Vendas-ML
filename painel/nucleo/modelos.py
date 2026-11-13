@@ -162,6 +162,7 @@ class ResultadoItem:
     conta: str
     data: datetime
     pedido_id: str
+    venda_id: str                      # numero da venda do relatorio do ML: o do pacote (carrinho) ou o do pedido
     anuncio_id: str
     titulo: str
     produto: str
@@ -186,7 +187,7 @@ class ResumoPeriodo:
     """Uma linha do Resumo: conta x periodo (mes) ou conta x produto, com acumulado."""
     conta: str
     periodo: str                 # "AAAA-MM" ou nome do produto
-    vendas: int = 0              # pedidos distintos
+    vendas: int = 0              # vendas distintas como no relatorio do ML (carrinho = 1)
     unidades: int = 0
     bruto: float = 0.0
     liquido: float = 0.0

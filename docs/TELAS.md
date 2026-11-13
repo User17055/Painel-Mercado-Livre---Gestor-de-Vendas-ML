@@ -58,7 +58,7 @@ Todas as tabelas: ordenar clicando no cabeçalho, total na última linha, busca 
 | Por mês | conta × mês | Conta, Mês, Vendas, Unidades, Bruto, Líquido, Custo, Rebate, Lucro antes, Imposto, Lucro depois, Margem, Acumulado, Un. sem custo |
 | Por produto | conta × produto | Conta, Produto, Unidades, Líquido, Custo, Rebate, Lucro antes, Imposto, Lucro depois, Margem, Un. sem custo (do maior lucro ao menor) |
 | Por anúncio | conta × anúncio | Conta, Anúncio, Título, Tipo, Produto, Unidades, Líquido, Lucro depois, Margem |
-| Vendas | item de pedido | Data, Conta, Pedido, Anúncio, Título, Produto, Tipo, Unid., Bruto, Tarifa, Frete, Líquido, Custo, Rebate, Lucro antes, Imposto, Lucro depois, Avisos |
+| Vendas | item de pedido | Data, Conta, Pedido, Venda (n.º do relatório do ML: o do pacote no carrinho), Anúncio, Título, Produto, Tipo, Unid., Bruto, Tarifa, Frete, Líquido, Custo, Rebate, Lucro antes, Imposto, Lucro depois, Avisos |
 | Canceladas e devolvidas | item de pedido | as mesmas da aba Vendas + Situação (o líquido delas pode ser negativo: frete e devolução que o vendedor pagou) |
 
 - Com `rebate.comparar` = true, "Lucro antes" vira duas colunas: "sem rebate" e "com rebate (x%)".
@@ -93,9 +93,10 @@ Um eixo por gráfico (nunca dois eixos de escalas diferentes):
 ## 8. O que muda no código para isso (fase 1b)
 - Feito: `CalculadoraLucro.resultado` (fórmulas da ARQUITETURA, seção 3, com rebate com × sem); `ResultadoItem` com
   `tipo_anuncio` e `lucro_com_rebate`; `resumo.por_anuncio`, `resumo.total` e `resumo.abas_excel` (todas as abas).
-- Falta: as três páginas e:
-  - leitura do banco com cache por data da última atualização (a tela não relê tudo a cada clique).
-  - teste: total da tela = total do núcleo = total do relatório do ML no período conferido.
+- Feito também: as três páginas (`painel\paginas\`) com as peças comuns em `painel\tela.py` (filtros conta e
+  período guardados entre páginas, leitura do banco com cache que só relê quando o banco ou os parâmetros mudam,
+  tabela com valor numérico e formato brasileiro, rodapé) e o formato em `painel\nucleo\formato.py`.
+- O total de cada tabela vem de `resumo.total` (o mesmo do Excel e da linha de comando).
 
 ## 9. Decisões (aprovadas em 13/11/2026)
 1. Filtros de conta e período já na 1b; produto e tipo de anúncio na fase 2.

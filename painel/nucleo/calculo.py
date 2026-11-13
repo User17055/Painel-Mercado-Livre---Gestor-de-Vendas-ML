@@ -57,7 +57,8 @@ class CalculadoraLucro:
             prod = self.produto(item)
             liq = round(rec - tar - fre, 2)
             avisos: list[str] = []
-            base = dict(conta=pedido.conta, data=pedido.fechado_em, pedido_id=pedido.pedido_id, anuncio_id=item.anuncio_id,
+            base = dict(conta=pedido.conta, data=pedido.fechado_em, pedido_id=pedido.pedido_id,
+                        venda_id=pedido.pack_id or pedido.pedido_id, anuncio_id=item.anuncio_id,
                         titulo=item.titulo, produto=prod, tipo_anuncio=nome_tipo(item.tipo_anuncio), unidades=item.quantidade,
                         bruto=item.bruto(), tarifa=tar, frete=fre, liquido=liq, situacao=situacao, avisos=avisos)
             if situacao != Situacao.VALIDA:

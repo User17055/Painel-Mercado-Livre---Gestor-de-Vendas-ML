@@ -110,6 +110,13 @@ class TestResumos(unittest.TestCase):
         esperado = round(sum(x.lucro_depois_imposto for x in com_custo) / sum(x.liquido for x in com_custo) * 100, 1)
         self.assertEqual(t.margem_pct(), esperado)
 
+    def test_carrinho_conta_uma_venda(self):
+        """No ML um carrinho vira um pedido por produto no mesmo pacote; o relatorio de vendas conta o pacote como 1 venda."""
+        calc = CalculadoraLucro(ParametrosFalsos())
+        L = calc.resultados([pedido("1", pack_id="P1"), pedido("2", pack_id="P1"), pedido("3")])
+        self.assertEqual([x.venda_id for x in L], ["P1", "P1", "3"])
+        self.assertEqual(resumo.total(L).vendas, 2)
+
     def test_por_anuncio(self):
         r = {x.anuncio_id: x for x in resumo.por_anuncio(self.linhas())}
         self.assertEqual((r["MLB1"].vendas, r["MLB1"].unidades), (2, 2))
@@ -123,12 +130,23 @@ class TestResumos(unittest.TestCase):
         self.assertEqual(wb.sheetnames, ["Resumo", "Por produto", "Por anúncio", "Vendas", "Canceladas e devolvidas", "Custos",
                                          "Rebate", "Imposto", "Premissas"])
         cab = [c.value for c in wb["Vendas"][1]]
-        self.assertEqual(cab[:8], ["Conta", "Data", "Pedido", "Anúncio", "Título", "Produto", "Tipo", "Unidades"])
+        self.assertEqual(cab[:9], ["Conta", "Data", "Pedido", "Venda", "Anúncio", "Título", "Produto", "Tipo", "Unidades"])
         self.assertIn("Margem (%)", [c.value for c in wb["Resumo"][1]])
         self.assertFalse(any(str(c.value).startswith("_") for c in wb["Resumo"][1]))
         self.assertEqual(wb["Vendas"]["B2"].number_format, "dd/mm/yyyy hh:mm")
         self.assertEqual(resumo.nome_arquivo(["TPP", "PD"], date(2026, 1, 1), date(2026, 11, 13)),
                          "vendas-ml_TPP-PD_2026-01-01_2026-11-13.xlsx")
+
+
+class TestFormato(unittest.TestCase):
+    def test_padrao_brasileiro(self):
+        from painel.nucleo import formato as F
+        self.assertEqual(F.brl(1234.5), "R$ 1.234,50")
+        self.assertEqual(F.brl(-331.72), "−R$ 331,72")
+        self.assertTrue(F.negativo(F.brl(-1)))
+        self.assertEqual((F.brl(None), F.pct(12.34), F.inteiro(1034)), ("—", "12,3%", "1.034"))
+        self.assertEqual(F.data_hora("2026-11-13T12:47:48"), "13/11/2026 12:47")
+        self.assertEqual(F.mes("2026-03"), "Março/2026")
 
 
 if __name__ == "__main__":

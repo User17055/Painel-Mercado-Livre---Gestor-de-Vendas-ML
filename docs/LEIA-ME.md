@@ -1,6 +1,6 @@
 # Painel de vendas e lucro do ML (TPP + PD): LEIA-ME
-Estado em 13/11/2026: **coletor de pedidos pronto e conferido (fase 1a)**; **cálculo do lucro, resumos e Excel prontos e
-conferidos (fase 1b, núcleo)**; telas na fase 1b. Roda em qualquer PC.
+Estado em 13/11/2026: **coletor de pedidos pronto e conferido (fase 1a)**; **cálculo do lucro, resumos, Excel e telas prontos
+(fase 1b)**; falta a carga inicial no banco do servidor. Roda em qualquer PC.
 Requisitos e fases: `PLANO-PAINEL-ML.md`. Camadas, classes, fórmulas e modos de uso: `ARQUITETURA.md`. Telas: `TELAS.md`
 (os três nesta pasta).
 Código: `painel\`, `analise\` e `testes\` (esta pasta `docs` não tem código; as pastas de código não têm documentação). Visão geral: `README.md`
@@ -45,11 +45,12 @@ Configuração: só variáveis de ambiente (tabela em `painel\nucleo\caminhos.py
 | CSV e Excel (Arial, autor, abas) | `painel\nucleo\exportar.py` | pronto e testado |
 | Botão "Atualizar agora": trava e intervalo | `painel\nucleo\atualizar.py` | pronto e testado (ligar à coleta: fase 2; ver risco dos tokens na ARQUITETURA, seção 6) |
 | Conferências: sem comprador / API × Excel / unidades | `painel\nucleo\conferencia.py` | prontas (também por linha de comando) |
-| Telas (Visão geral, Vendas e lucro, Downloads) | `painel\app.py`, `painel\paginas\` | casca (fase 1b) |
+| Formato brasileiro (R$, %, datas, sinal "−") | `painel\nucleo\formato.py` | pronto e testado |
+| Telas (Visão geral, Vendas e lucro, Downloads), filtros conta e período, leitura com cache | `painel\app.py`, `painel\tela.py`, `painel\paginas\` | prontas (fase 1b) |
 
 ## Como conferir
 - Testes, na raiz do repositório (Python 3.12 ou mais novo com `openpyxl`, por exemplo o `.venv` do `instalar.ps1`):
-  `python -m unittest discover -s testes -t .` (53 testes; sem os parâmetros da empresa,
+  `python -m unittest discover -s testes -t .` (55 testes; sem os parâmetros da empresa,
   2 pulados com aviso). O GitHub roda os mesmos testes a cada push (`.github\workflows\testes.yml`).
 - Regras fixas conferidas pelos testes: nenhum nome de campo de comprador no código (`test_privacidade.py`); nenhum
   `C:\Users\...` em código e configuração, `.ps1` só ASCII e nenhum pedido de escrita à API (`test_regras_do_codigo.py`);
@@ -89,7 +90,7 @@ Lucro calculado pelo painel (banco da API) comparado com a mesma regra aplicada 
    cada pessoa trabalha na sua própria branch e leva o trabalho para a `main` por merge, com os testes passando.
 1. **Fase 1a (feito):** coletor (só GET), banco, `RepositorioPedidos.pedidos`, líquido e conferências. Falta só a carga
    inicial de 2026 no banco de verdade (`--gravar`, uma conta por vez), na máquina que vai guardar os dados.
-2. **Fase 1b** (telas aprovadas em `TELAS.md`): núcleo feito (lucro, resumos, Excel); faltam as três telas;
+2. **Fase 1b** (telas aprovadas em `TELAS.md`): feita (lucro, resumos, Excel e as três telas);
    instalar os pacotes da tela e construir a imagem Docker (com ok: baixa a imagem base e pacotes).
 3. **Fase 2**: filtros, gráficos, botão ligado à coleta; antes, resolver o risco dos tokens (ARQUITETURA, seção 6).
 4. Decidir qual máquina é o servidor.

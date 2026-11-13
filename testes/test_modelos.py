@@ -14,7 +14,7 @@ import ml_param  # noqa: E402
 
 
 def linha(conta, dia, liquido, custo, lucro, situacao=Situacao.VALIDA, produto="Bravecto250"):
-    return ResultadoItem(conta=conta, data=datetime.fromisoformat(dia), pedido_id=dia, anuncio_id="MLB1", titulo="t",
+    return ResultadoItem(conta=conta, data=datetime.fromisoformat(dia), pedido_id=dia, venda_id=dia, anuncio_id="MLB1", titulo="t",
                          produto=produto, tipo_anuncio="Clássico", unidades=1, bruto=liquido, tarifa=0, frete=0, liquido=liquido,
                          custo=custo, rebate=0, lucro_antes_imposto=lucro, lucro_com_rebate=None, imposto=0,
                          lucro_depois_imposto=lucro, situacao=situacao)

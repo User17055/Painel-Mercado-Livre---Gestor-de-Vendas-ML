@@ -28,8 +28,8 @@ FORMULAS = [
 
 
 def _somar(r, x: ResultadoItem, pedidos: set) -> None:
-    if x.pedido_id not in pedidos:
-        pedidos.add(x.pedido_id)
+    if x.venda_id not in pedidos:   # carrinho (varios pedidos no mesmo pacote) = 1 venda, como no relatorio do ML
+        pedidos.add(x.venda_id)
         r.vendas += 1
     r.unidades += x.unidades
     r.liquido = round(r.liquido + x.liquido, 2)

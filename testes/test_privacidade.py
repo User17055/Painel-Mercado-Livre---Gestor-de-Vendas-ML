@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """O coletor de pedidos so deixa passar a lista fechada: nada de comprador chega ao banco.
-Este arquivo de teste e o UNICO lugar que escreve os nomes dos campos de comprador do ML (para provar que sao descartados)."""
+E nenhum codigo do painel ou de analise/ escreve o nome de um campo de comprador do ML.
+Este arquivo de teste e o UNICO lugar que escreve esses nomes (para provar que sao descartados)."""
+import re
 import sqlite3
 import tempfile
 from contextlib import closing
@@ -23,6 +25,17 @@ PEDIDO_FALSO = {
                      "quantity": 1, "unit_price": 157.99, "sale_fee": 19.75, "listing_type_id": "gold_special"}],
 }
 SENSIVEIS = ("COMPRADOR_TESTE", "Fulano", "fulano@exemplo.com", "999999999", "00000000000")
+
+PROJETO = Path(__file__).resolve().parents[1]
+# Campos de comprador no JSON do ML. Pega tambem dentro de nomes compostos (buyer_id, payer_nickname, receiver_address).
+CAMPOS_COMPRADOR = ("buyer", "payer", "receiver", "nickname", "first_name", "last_name", "email", "doc_number", "phone",
+                    "address")
+_RX_COMPRADOR = re.compile(r"(?<![a-z])(" + "|".join(CAMPOS_COMPRADOR) + r")(?![a-z])", re.I)
+
+
+def _codigo():
+    """Todo .py fora de testes/ (o painel e analise/)."""
+    return sorted(PROJETO.glob("painel/**/*.py")) + sorted(PROJETO.glob("analise/*.py"))
 
 
 class TestListaFechada(unittest.TestCase):
@@ -56,6 +69,23 @@ class TestListaFechada(unittest.TestCase):
             ok, txt = conferencia.sem_comprador(banco)
             self.assertFalse(ok)
             self.assertIn("pedidos.nickname", txt)
+
+
+class TestCodigoSemCampoDeComprador(unittest.TestCase):
+    def test_nenhum_nome_de_campo_de_comprador_no_codigo(self):
+        achados = []
+        for arq in _codigo():
+            for n, linha in enumerate(arq.read_text(encoding="utf-8").splitlines(), 1):
+                m = _RX_COMPRADOR.search(linha)
+                if m:
+                    achados.append(f"{arq.relative_to(PROJETO)}:{n}: {m.group(0)}")
+        self.assertEqual(achados, [], "use so a lista fechada de analise/ml_pedidos.py")
+
+    def test_regra_pega_nome_composto(self):
+        for exemplo in ("x = pedido['buyer']['id']", "payer_id = 1", "receiver_address", "BUYER", "dados.nickname"):
+            self.assertTrue(_RX_COMPRADOR.search(exemplo), exemplo)
+        for exemplo in ("comprador descartado", "quantidade", "anuncio_id"):
+            self.assertFalse(_RX_COMPRADOR.search(exemplo), exemplo)
 
 
 if __name__ == "__main__":

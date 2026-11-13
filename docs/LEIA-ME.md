@@ -44,16 +44,17 @@ Configuração: só variáveis de ambiente (tabela em `painel\nucleo\caminhos.py
 
 ## Como conferir
 - Testes, na raiz do repositório (Python 3.12 ou mais novo com `openpyxl`, por exemplo o `.venv` do `instalar.ps1`):
-  `python -m unittest discover -s testes -t .` (12/11: 21 testes; sem os parâmetros da empresa,
+  `python -m unittest discover -s testes -t .` (27 testes; sem os parâmetros da empresa,
   2 pulados com aviso). O GitHub roda os mesmos testes a cada push (`.github\workflows\testes.yml`).
-- Regras de privacidade e portabilidade (nenhum campo de comprador e nenhum `C:\Users\...` no código, `.ps1` só ASCII): ainda
-  sem teste automático; virar um teste em `testes\` é o passo 0 (abaixo).
+- Regras fixas conferidas pelos testes: nenhum nome de campo de comprador no código (`test_privacidade.py`); nenhum
+  `C:\Users\...` em código e configuração, `.ps1` só ASCII e nenhum pedido de escrita à API (`test_regras_do_codigo.py`);
+  lista do Docker igual aos imports (`test_pacote.py`).
 - Compose válido sem rodar nada: `docker compose config` na raiz do repositório.
 - Criar o banco vazio (não chama a API): `python analise\ml_pedidos.py criar-banco`.
 
 ## Próximos passos (ordem)
-0. **Antes da fase 1a (organização):** transformar as regras de privacidade e portabilidade num teste em `testes\`; combinar
-   como a equipe trabalha (branch por tarefa e pull request, ou direto na `main`).
+0. **Organização (feito):** as regras de privacidade e portabilidade viraram teste (ver "Como conferir"). Fluxo da equipe:
+   cada pessoa trabalha na sua própria branch e leva o trabalho para a `main` por merge, com os testes passando.
 1. **Fase 1a**: `ml_pedidos.buscar_pedidos/buscar_fretes/buscar_cobrancas/gravar` (só GET), primeiro numa conta e num período
    curto **sem gravar**; depois `RepositorioPedidos.pedidos` e as conferências API × Excel (01/09 a 30/10, venda a venda).
 2. **Fase 1b**: `CalculadoraLucro.resultado` e as três telas; construir a imagem Docker (com ok: baixa a imagem base e pacotes).

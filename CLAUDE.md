@@ -13,6 +13,7 @@ Ao abrir: ler `README.md` e `docs/LEIA-ME.md` (estado, próximos passos, armadil
 - `.ps1` só com caracteres ASCII (PowerShell 5.1). Downloads (pacotes, imagem Docker) só com o ok de quem pediu.
 
 ## Antes de terminar uma mudança
-- `python -m unittest discover -s testes -t .` sem falha.
-- Lista do Docker coerente com os imports (`test_pacote.py`).
-- Commit e push só quando pedido.
+- `python -m unittest discover -s testes -t .` sem falha. Os testes já conferem as regras fixas acima (comprador,
+  caminho de PC, `.ps1` ASCII, só GET) e a lista do Docker (`test_pacote.py`).
+- Trabalhar na branch de quem pediu (cada pessoa tem a sua); a `main` só recebe merge, com os testes passando.
+- Commit, push e merge só quando pedido.
